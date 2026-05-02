@@ -1,0 +1,122 @@
+{
+  "common": {
+    "welcome": "Welcome to NeerSetu",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "submit": "Submit",
+    "back": "Back",
+    "next": "Next",
+    "done": "Done",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot Password?",
+    "loginSuccess": "Login successful",
+    "loginError": "Login failed",
+    "registerSuccess": "Registration successful",
+    "registerError": "Registration failed"
+  },
+  "navigation": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "reports": "Reports",
+    "alerts": "Alerts",
+    "profile": "Profile",
+    "settings": "Settings",
+    "about": "About"
+  },
+  "waterQuality": {
+    "title": "Water Quality",
+    "currentStatus": "Current Status",
+    "phLevel": "pH Level",
+    "turbidity": "Turbidity",
+    "chlorine": "Chlorine",
+    "bacteria": "Bacteria",
+    "safe": "Safe",
+    "unsafe": "Unsafe",
+    "moderate": "Moderate",
+    "lastUpdated": "Last Updated",
+    "village": "Village",
+    "location": "Location"
+  },
+  "reports": {
+    "title": "Water Quality Reports",
+    "generateReport": "Generate Report",
+    "downloadReport": "Download Report",
+    "shareReport": "Share Report",
+    "reportDate": "Report Date",
+    "reportPeriod": "Report Period",
+    "villageReport": "Village Report",
+    "districtReport": "District Report"
+  },
+  "alerts": {
+    "title": "Alerts & Notifications",
+    "newAlert": "New Alert",
+    "alertType": "Alert Type",
+    "alertLevel": "Alert Level",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low",
+    "critical": "Critical",
+    "waterContamination": "Water Contamination",
+    "maintenance": "Maintenance",
+    "systemDown": "System Down"
+  },
+  "profile": {
+    "title": "Profile",
+    "personalInfo": "Personal Information",
+    "name": "Name",
+    "phone": "Phone",
+    "address": "Address",
+    "village": "Village",
+    "district": "District",
+    "state": "State",
+    "updateProfile": "Update Profile",
+    "changePassword": "Change Password"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "notifications": "Notifications",
+    "theme": "Theme",
+    "privacy": "Privacy",
+    "about": "About App",
+    "version": "Version",
+    "contact": "Contact Support"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "overview": "Overview",
+    "waterQualityStatus": "Water Quality Status",
+    "recentReports": "Recent Reports",
+    "alerts": "Alerts",
+    "villageStats": "Village Statistics",
+    "totalVillages": "Total Villages",
+    "safeVillages": "Safe Villages",
+    "unsafeVillages": "Unsafe Villages",
+    "pendingReports": "Pending Reports"
+  },
+  "errors": {
+    "networkError": "Network Error",
+    "serverError": "Server Error",
+    "notFound": "Not Found",
+    "unauthorized": "Unauthorized",
+    "forbidden": "Forbidden",
+    "tryAgain": "Try Again",
+    "checkConnection": "Check your internet connection"
+  }
+}
+

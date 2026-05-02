@@ -4,7 +4,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const path = require('path');
-const config = require('./config/database');
+const connectDB = require('./config/database');
 const logger = require('./utils/logger');
 const errorHandler = require('./middleware/errorHandler');
 const { apiLimiter } = require('./middleware/rateLimiter');
@@ -47,6 +47,15 @@ app.use((req, res, next) => {
 // Serve static files from uploads directory
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
+// Simple test endpoint without authentication
+app.get('/test', (req, res) => {
+  res.json({ 
+    success: true, 
+    message: 'Backend is working!', 
+    timestamp: new Date().toISOString() 
+  });
+});
+
 // API routes
 app.use('/api', routes);
 
@@ -83,16 +92,13 @@ app.use('*', (req, res) => {
 app.use(errorHandler);
 
 // Database connection
-mongoose.connect(config.mongoUri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(() => {
-  logger.info('Connected to MongoDB');
-})
-.catch((error) => {
-  logger.error('MongoDB connection failed', { error: error.message });
-  process.exit(1);
+connectDB();
+
+// Start server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  logger.info(`Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
 
 // Graceful shutdown

@@ -32,15 +32,40 @@ const Chart = ({ type, data, options, title, className = '' }) => {
     plugins: {
       legend: {
         position: 'top',
+        labels: {
+          color: '#e5e7eb'
+        }
       },
       title: {
         display: !!title,
         text: title,
+        color: '#f9fafb'
       },
+      tooltip: {
+        backgroundColor: '#111827',
+        titleColor: '#f9fafb',
+        bodyColor: '#e5e7eb',
+        borderColor: 'rgba(148, 163, 184, 0.4)',
+        borderWidth: 1
+      }
     },
     scales: {
+      x: {
+        grid: {
+          color: 'rgba(148, 163, 184, 0.18)'
+        },
+        ticks: {
+          color: '#cbd5e1'
+        }
+      },
       y: {
         beginAtZero: true,
+        grid: {
+          color: 'rgba(148, 163, 184, 0.18)'
+        },
+        ticks: {
+          color: '#cbd5e1'
+        }
       },
     },
   };
@@ -61,9 +86,9 @@ const Chart = ({ type, data, options, title, className = '' }) => {
   };
 
   return (
-    <div className={`bg-white rounded-lg shadow-sm border border-gray-200 p-6 ${className}`}>
+    <div className={`bg-[#111827] rounded-lg shadow-sm border border-slate-700 p-6 ${className}`}>
       {title && (
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
+        <h3 className="text-lg font-semibold text-slate-50 mb-4">{title}</h3>
       )}
       <div className="h-64">
         {renderChart()}

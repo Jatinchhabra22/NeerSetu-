@@ -3,20 +3,20 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
-import { useTranslation } from '../contexts/LanguageContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 
 // Import screens
 import LoginScreen from '../screens/auth/LoginScreen';
 import RegisterScreen from '../screens/auth/RegisterScreen';
-import HomeScreen from '../screens/main/HomeScreen';
+import HomeScreen from '../screens/HomeScreen';
 import ReportsScreen from '../screens/main/ReportsScreen';
 import WaterQualityScreen from '../screens/main/WaterQualityScreen';
 import AwarenessScreen from '../screens/main/AwarenessScreen';
 import ChatbotScreen from '../screens/main/ChatbotScreen';
 import AlertsScreen from '../screens/main/AlertsScreen';
 import AnalyticsScreen from '../screens/main/AnalyticsScreen';
-import SettingsScreen from '../screens/main/SettingsScreen';
+import SettingsScreen from '../screens/SettingsScreen';
 import ProfileScreen from '../screens/main/ProfileScreen';
 import HealthReportScreen from '../screens/forms/HealthReportScreen';
 import WaterReportScreen from '../screens/forms/WaterReportScreen';
@@ -46,7 +46,7 @@ const AuthStack = () => {
 
 const MainTabs = () => {
   const { theme } = useTheme();
-  const { t } = useTranslation();
+  const { t } = useLanguage();
 
   return (
     <Tab.Navigator
@@ -156,7 +156,7 @@ const MainTabs = () => {
 
 const MainStack = () => {
   const { theme } = useTheme();
-  const { t } = useTranslation();
+  const { t } = useLanguage();
 
   return (
     <Stack.Navigator

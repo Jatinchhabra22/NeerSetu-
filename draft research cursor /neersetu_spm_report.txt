@@ -1,0 +1,473 @@
+NEERSETU
+Software Project Management (SPM) Report
+
+Project Title
+NeerSetu: Smart Health Surveillance and Early Warning System for Water-Borne Diseases
+
+Prepared By
+Project Team, Department of Computer Science and Engineering
+
+Academic Session
+2025-2026
+
+Guide
+[Faculty Name]
+
+------------------------------------------------------------
+1. Executive Summary
+------------------------------------------------------------
+This report documents complete software project management planning and execution for NeerSetu. The project objective is to build an integrated platform that ingests water quality and public health proxy data, predicts short-term risk, and provides actionable alerts for district administrators.
+
+The report covers initiation, planning, scheduling, estimation, risk handling, quality control, release strategy, and maintenance governance. Unlike a research paper, this document emphasizes management decisions, process discipline, stakeholder coordination, and delivery evidence.
+
+------------------------------------------------------------
+2. Project Charter
+------------------------------------------------------------
+2.1 Vision
+Enable district teams to detect likely water-borne disease escalation early enough to act before full outbreak spread.
+
+2.2 Mission
+Deliver a modular, explainable, and operationally practical surveillance software platform with dashboard and API integrations.
+
+2.3 Business Need
+- Fragmented manual workflows delay intervention.
+- Existing systems lack predictive prioritization.
+- Alert decisions are often undocumented and inconsistent.
+
+2.4 Success Criteria
+- Working end-to-end data pipeline.
+- Reliable model inference API.
+- Tiered alert dashboard with explanation panels.
+- Pilot-ready documentation and SOP package.
+
+2.5 Constraints
+- Limited labeled data quality in early phase.
+- Tight academic timeline.
+- Multi-component stack requiring coordination.
+
+2.6 Assumptions
+- Domain experts available for threshold validation.
+- Synthetic dataset can support initial model engineering.
+- Deployment environment available for pilot demonstration.
+
+------------------------------------------------------------
+3. Scope Management
+------------------------------------------------------------
+3.1 In-Scope
+- Data ingestion and validation modules.
+- Feature processing and ML training pipeline.
+- Alert scoring API and web dashboard integration.
+- Basic role-based access controls.
+- Project documentation and operational SOPs.
+
+3.2 Out-of-Scope (Current Release)
+- Full EHR integration with hospital systems.
+- Automated legal reporting workflows.
+- National-level multi-state deployment.
+
+3.3 Deliverables
+- Source code repositories (backend, ML service, dashboard, mobile integration stubs).
+- Trained model artifacts and metadata.
+- Test reports and quality checklist.
+- Deployment scripts and environment setup notes.
+- User manual and admin manual.
+
+3.4 Scope Change Process
+All scope changes are logged in a change register with:
+- change request ID,
+- impact on timeline/cost/quality,
+- approval by guide plus technical lead.
+
+------------------------------------------------------------
+4. Stakeholder Analysis
+------------------------------------------------------------
+4.1 Primary Stakeholders
+- Project Guide: academic oversight and acceptance.
+- Development Team: design, implementation, testing.
+- Public Health Analysts: alert interpretation requirements.
+- District Admin Representatives: operational response users.
+
+4.2 Stakeholder Matrix
+- High influence / high interest: Guide, Technical Lead.
+- High influence / medium interest: Institutional reviewers.
+- Medium influence / high interest: Public health users.
+- Medium influence / medium interest: Ops support members.
+
+4.3 Communication Plan
+- Daily standup (15 min).
+- Weekly sprint review.
+- Biweekly risk review.
+- Monthly milestone presentation.
+
+------------------------------------------------------------
+5. Work Breakdown Structure (WBS)
+------------------------------------------------------------
+Level 1
+1. Project Management
+2. Requirements Engineering
+3. Architecture and Design
+4. Backend Development
+5. ML Pipeline Development
+6. Frontend/Dashboard Development
+7. Integration and Testing
+8. Deployment and Documentation
+
+Level 2 Highlights
+4. Backend Development
+4.1 API design
+4.2 Input validation
+4.3 Alert service
+4.4 Auth and logging
+
+5. ML Pipeline
+5.1 Data preprocessing
+5.2 Feature engineering
+5.3 Model training
+5.4 Calibration
+5.5 Inference interface
+
+------------------------------------------------------------
+6. Schedule Management
+------------------------------------------------------------
+6.1 Lifecycle Model
+Hybrid Agile with milestone gates.
+
+6.2 Sprint Plan
+Sprint 1: Requirements, architecture baseline.
+Sprint 2: Data ingestion and preprocessing.
+Sprint 3: Model training and evaluation.
+Sprint 4: Dashboard and alert workflows.
+Sprint 5: Integration hardening and QA.
+Sprint 6: Documentation and pilot package.
+
+6.3 Milestones
+M1: Charter and requirements sign-off.
+M2: Core pipeline functional demo.
+M3: Model evaluation report complete.
+M4: End-to-end integrated release candidate.
+M5: Final review and submission package.
+
+6.4 Dependency Management
+- ML service depends on stable schema from backend.
+- Dashboard alert views depend on finalized API contracts.
+- UAT depends on calibrated threshold policy.
+
+------------------------------------------------------------
+7. Effort and Cost Estimation
+------------------------------------------------------------
+7.1 Estimation Technique
+Three-point estimation with expert adjustment for technical uncertainty.
+
+7.2 Team Effort Allocation
+- Project Management: 12%
+- Requirements and design: 15%
+- Development: 43%
+- Testing and QA: 18%
+- Documentation and release: 12%
+
+7.3 Cost Components (Academic Estimation Format)
+- Compute and tools (development environment).
+- Dataset preparation and storage.
+- Communication and coordination overhead.
+- Review and validation cycles.
+
+7.4 Buffer Strategy
+10-15% contingency on integration and stabilization tasks due to cross-service dependencies.
+
+------------------------------------------------------------
+8. Requirements Management
+------------------------------------------------------------
+8.1 Functional Requirements
+FR1: Ingest multi-source records through validated endpoints.
+FR2: Compute risk score per district/day.
+FR3: Generate alert tiers based on configurable thresholds.
+FR4: Display explanations and confidence details in UI.
+FR5: Store audit history for each alert event.
+
+8.2 Non-Functional Requirements
+NFR1: API response under defined latency target.
+NFR2: Service availability target during pilot hours.
+NFR3: Secure handling of sensitive operational data.
+NFR4: Maintainability through modular service design.
+
+8.3 Traceability
+A requirements traceability matrix links FR/NFR items to design modules, tests, and release notes.
+
+------------------------------------------------------------
+9. Architecture and Technical Governance
+------------------------------------------------------------
+9.1 Architecture Pattern
+Service-oriented modular architecture:
+- Backend service for ingestion/auth/alerts.
+- ML service for training/inference.
+- Dashboard frontend for monitoring and action.
+
+9.2 API Governance
+- Versioned endpoints.
+- Explicit request/response schemas.
+- Error code conventions.
+- Backward compatibility policy for minor versions.
+
+9.3 Configuration Management
+- Environment-based config files.
+- Secret management for credentials.
+- Release tags for reproducibility.
+
+------------------------------------------------------------
+10. Quality Management Plan
+------------------------------------------------------------
+10.1 Quality Objectives
+- Functional correctness of risk pipeline.
+- Stable, understandable alert rendering.
+- Reproducible model outputs under fixed artifacts.
+
+10.2 QA Activities
+- Unit testing for critical processing functions.
+- Integration tests for API-to-ML interactions.
+- Regression tests for alert policy changes.
+- Manual UAT scripts for operational scenarios.
+
+10.3 Definition of Done
+- Code reviewed and merged.
+- Tests passed.
+- Documentation updated.
+- No unresolved critical defects.
+
+------------------------------------------------------------
+11. Test Strategy and Results Summary
+------------------------------------------------------------
+11.1 Test Levels
+- Unit Tests: data transforms, threshold logic.
+- Integration Tests: service communication and error handling.
+- System Tests: end-to-end alert lifecycle.
+- UAT: analyst workflow simulation.
+
+11.2 Defect Classification
+- Critical: breaks risk scoring or alert integrity.
+- Major: affects usability or reliability significantly.
+- Minor: cosmetic or non-blocking behavior issues.
+
+11.3 Exit Criteria
+- 0 open critical defects,
+- acceptable major defect threshold,
+- agreed UAT scenarios passed.
+
+------------------------------------------------------------
+12. Risk Management
+------------------------------------------------------------
+12.1 Risk Register (Sample)
+R1 Data drift causes model quality drop.
+Mitigation: scheduled monitoring and retraining trigger.
+
+R2 Late reporting reduces forecast reliability.
+Mitigation: completeness scoring and confidence annotation.
+
+R3 Integration failures across services.
+Mitigation: contract tests and staged rollout.
+
+R4 Alert fatigue due to false positives.
+Mitigation: threshold tuning and tiered policy.
+
+R5 Team bandwidth constraints.
+Mitigation: backlog prioritization and scope freeze windows.
+
+12.2 Risk Review Cadence
+Biweekly risk board with severity updates and action owners.
+
+------------------------------------------------------------
+13. Security and Privacy Management
+------------------------------------------------------------
+13.1 Security Controls
+- Authentication and role-based authorization.
+- Input sanitization and validation.
+- Audit logs for sensitive actions.
+- Dependency vulnerability checks.
+
+13.2 Privacy Principles
+- Minimum data exposure by role.
+- Masking of non-essential identifiers.
+- Retention and deletion policy alignment with project governance.
+
+------------------------------------------------------------
+14. DevOps and Release Management
+------------------------------------------------------------
+14.1 Branch Strategy
+- Main branch protected.
+- Feature branches per module.
+- Release branch for stabilization.
+
+14.2 CI/CD Expectations
+- Lint and test checks on merge requests.
+- Build validation before release tagging.
+- Artifact versioning for model and app bundles.
+
+14.3 Environment Plan
+- Dev: rapid iteration.
+- Test: integration and UAT.
+- Demo/Pilot: controlled stakeholder access.
+
+------------------------------------------------------------
+15. Change and Configuration Control
+------------------------------------------------------------
+15.1 Change Types
+- Corrective change.
+- Adaptive change.
+- Preventive change.
+- Perfective change.
+
+15.2 Approval Workflow
+Minor change: technical lead approval.
+Major change: guide plus team consensus and revised timeline.
+
+15.3 Baseline Artifacts
+- Requirements baseline.
+- Architecture baseline.
+- Test baseline.
+- Release baseline.
+
+------------------------------------------------------------
+16. Team Structure and Responsibility (RACI)
+------------------------------------------------------------
+Roles
+- Project Manager (student lead)
+- Backend Lead
+- ML Lead
+- Frontend Lead
+- QA Coordinator
+- Documentation Coordinator
+
+RACI Snapshot
+- Requirement finalization: R(Project Manager), A(Guide)
+- API development: R(Backend Lead), A(Tech Lead)
+- Model tuning: R(ML Lead), A(Tech Lead)
+- UAT execution: R(QA Coordinator), A(Project Manager)
+
+------------------------------------------------------------
+17. Documentation Management
+------------------------------------------------------------
+17.1 Required Documents
+- SRS
+- SDD (software design document)
+- Test plan and test report
+- User guide and admin guide
+- Deployment notes
+- Release notes
+
+17.2 Versioning Policy
+Document version format: major.minor.revision with date and owner.
+
+------------------------------------------------------------
+18. Compliance and Audit Readiness
+------------------------------------------------------------
+18.1 Internal Compliance
+- Coding standards adherence.
+- Test evidence archived by release.
+- Decision logs maintained for scope and risk changes.
+
+18.2 Audit Trail
+Each alert event stores:
+- model version,
+- threshold version,
+- inference timestamp,
+- acknowledgment status.
+
+------------------------------------------------------------
+19. Performance Monitoring Plan
+------------------------------------------------------------
+19.1 Technical KPIs
+- API latency percentiles.
+- Error rate by endpoint.
+- Uptime across pilot windows.
+
+19.2 Model KPIs
+- Precision/recall by alert tier.
+- Calibration drift.
+- False alarm rate trend.
+
+19.3 Operational KPIs
+- Alert acknowledgment time.
+- Alert closure turnaround.
+- Percentage of escalations resolved within SLA.
+
+------------------------------------------------------------
+20. Pilot Rollout Plan
+------------------------------------------------------------
+Phase 1: Controlled simulation and dry runs.
+Phase 2: Limited district pilot with supervision.
+Phase 3: Stabilization and feedback incorporation.
+
+Pilot Entry Criteria
+- RC build approved.
+- UAT sign-off complete.
+- Onboarding session delivered.
+
+Pilot Exit Criteria
+- KPI thresholds met for agreed period.
+- No unresolved critical incidents.
+
+------------------------------------------------------------
+21. Incident and Support Plan
+------------------------------------------------------------
+21.1 Incident Severity
+SEV1: platform unavailable or incorrect critical alerts.
+SEV2: degraded functionality.
+SEV3: minor issue or workaround available.
+
+21.2 Response Process
+- Incident logging,
+- owner assignment,
+- mitigation,
+- root cause analysis,
+- preventive action tracking.
+
+------------------------------------------------------------
+22. Lessons Learned
+------------------------------------------------------------
+- Early API contract definition reduced integration rework.
+- Calibration is as important as raw model accuracy.
+- Stakeholder language matters: explanations improved adoption.
+- Scope freeze windows prevented last-minute instability.
+
+------------------------------------------------------------
+23. Project Closure Report
+------------------------------------------------------------
+23.1 Closure Checklist
+- All planned deliverables submitted.
+- Acceptance review completed.
+- Documentation handed over.
+- Open issues transferred to future roadmap.
+
+23.2 Outcome Statement
+NeerSetu achieved its planned educational and technical outcomes by delivering a functioning, explainable early warning platform with documented management controls and pilot-readiness artifacts.
+
+------------------------------------------------------------
+24. Future Management Roadmap
+------------------------------------------------------------
+- Introduce quarterly model governance council.
+- Add automated retraining orchestration.
+- Expand incident analytics for proactive reliability management.
+- Prepare multi-district scaling playbook.
+
+------------------------------------------------------------
+Appendix A: Sample Sprint Board Columns
+------------------------------------------------------------
+Backlog | Ready | In Progress | Review | Testing | Done
+
+------------------------------------------------------------
+Appendix B: Sample Status Report Template
+------------------------------------------------------------
+Week Number:
+Completed Work:
+Planned Next Week:
+Risks/Blockers:
+Required Decisions:
+Owner Sign-off:
+
+------------------------------------------------------------
+Appendix C: Sample Risk Heatmap Legend
+------------------------------------------------------------
+Probability: Low/Medium/High
+Impact: Low/Medium/High/Critical
+Priority: Derived from probability x impact
+
+End of Report

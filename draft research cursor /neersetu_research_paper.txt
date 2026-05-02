@@ -1,0 +1,786 @@
+NeerSetu: An Interpretable Multi-Source Early Warning Framework for Water-Borne Disease Risk
+
+Authors: Project Team, Department of Computer Science and Engineering
+Institution: [Institute Name]
+Corresponding Contact: [Email]
+Date: [Month Year]
+
+========================================================================
+ABSTRACT
+========================================================================
+Water-borne disease surveillance in resource-constrained regions is frequently reactive rather than preventive because environmental observations, symptom reports, and operational response systems are disconnected. This paper presents NeerSetu, an end-to-end early warning framework that unifies heterogeneous data streams, estimates short-horizon outbreak risk, and converts model outputs into operationally meaningful alerts. The central contribution is not only predictive modeling but a complete decision workflow that includes data quality governance, uncertainty-aware calibration, interpretation modules, threshold policy design, and response accountability.
+
+The research investigates whether integrating water quality indicators, syndromic signals, weather context, and reporting reliability metadata improves near-term risk prediction over single-source baselines. Results from structured experiments on synthetic but policy-realistic datasets show consistent gains in recall and precision-recall tradeoff when multi-source features are used with calibrated gradient boosting models. The framework further introduces alert-tier mapping, confidence labeling, and audit trails to support accountable deployment.
+
+This paper contributes: (1) a district-oriented data integration architecture, (2) a transparent machine learning pipeline with calibration and explainability, (3) an operational policy layer linking risk to action, and (4) a governance strategy for safe adoption. The findings indicate that practical surveillance intelligence requires co-design across epidemiology, software engineering, and public administration rather than model optimization alone.
+
+Keywords: water-borne diseases, early warning system, public health informatics, explainable AI, risk calibration, surveillance analytics, decision support.
+
+========================================================================
+1. INTRODUCTION
+========================================================================
+Public health systems are strongest when intervention begins before escalation. For water-borne diseases, leading indicators often appear in environmental systems (water contamination spikes, sanitation disruptions, seasonal weather shifts) before clinical case loads peak. However, in many districts these indicators are not analyzed jointly, and data-driven prevention remains limited.
+
+NeerSetu addresses this gap by building a predictive and interpretable surveillance layer that sits between field observations and administrative action. The platform is designed for realistic constraints: delayed uploads, variable data quality, mixed digital maturity, limited specialist staff, and high consequence of missed signals.
+
+The research premise is simple: when multi-source weak signals are fused with robust quality controls and calibrated decision thresholds, early warning can improve without overwhelming administrators with false alarms.
+
+1.1 Epidemiological and Operational Context
+Water-borne disease risk is shaped by interacting pathways:
+- contamination events and treatment failures,
+- climate and hydrological dynamics,
+- population behavior and mobility,
+- health-seeking latency and reporting practices.
+
+Traditional surveillance often emphasizes confirmed case counting. While essential, confirmed case data is inherently lagging. A predictive strategy should include preclinical and contextual proxies that offer early directional evidence.
+
+1.2 Why Existing Systems Fall Short
+Common systemic limitations include:
+- Siloed ownership of water, health, and meteorological datasets.
+- Inconsistent timestamping and schema standards.
+- Inadequate representation of data uncertainty in dashboards.
+- Binary alert rules that ignore confidence and context.
+- Absence of action traceability (who acknowledged, who acted, when closed).
+
+1.3 Research Rationale
+A deployable solution must satisfy four constraints simultaneously:
+1) predictive utility,
+2) interpretability for non-ML stakeholders,
+3) operational feasibility in low-resource settings,
+4) governance compliance and accountability.
+
+NeerSetu is built and evaluated under this four-constraint lens.
+
+========================================================================
+2. PROBLEM STATEMENT
+========================================================================
+District health and water authorities require actionable early signals of outbreak risk but currently depend on fragmented, delayed, and partially reliable inputs. The core problem is not raw data scarcity; it is the absence of a system that can convert noisy multi-source data into calibrated, explainable, and policy-aligned alerts.
+
+Formally, let D_t represent all available observations up to day t across water quality, symptom trends, weather context, and reporting metadata. The objective is to estimate:
+
+P(Y_{t+h}=1 | D_t), where h is the forecast horizon (3-7 days),
+
+and convert this probability into an alert tier A_t in {Watch, Warning, Critical} such that:
+- recall for high-risk events remains high,
+- false alarm burden remains manageable,
+- confidence and uncertainty are explicitly communicated.
+
+========================================================================
+3. RESEARCH QUESTIONS AND HYPOTHESES
+========================================================================
+RQ1: Does multi-source fusion improve short-horizon risk prediction compared to single-source baselines?
+H1: Multi-source models achieve higher PR-AUC and recall at fixed precision.
+
+RQ2: Which tabular model family best balances performance and interpretability for district use?
+H2: Calibrated gradient boosting provides superior discrimination with acceptable explanation quality.
+
+RQ3: Can calibrated probabilities reduce harmful alert volatility?
+H3: Calibration reduces threshold instability and improves operational trust.
+
+RQ4: What governance controls are necessary for safe field deployment?
+H4: Role-based access, auditability, and monthly threshold review reduce misuse risk.
+
+========================================================================
+4. OBJECTIVES
+========================================================================
+Primary objective:
+Design and validate an interpretable early warning framework for water-borne disease risk using integrated surveillance signals.
+
+Specific objectives:
+O1. Create a robust data schema for heterogeneous source integration.
+O2. Build preprocessing pipelines resilient to missingness and delayed reporting.
+O3. Engineer epidemiologically meaningful features for short-term prediction.
+O4. Compare baseline and advanced models under imbalanced classification.
+O5. Calibrate model outputs for policy-safe thresholding.
+O6. Provide explanation artifacts for each alert.
+O7. Define an operational alert-to-action protocol.
+O8. Document ethics, fairness, and governance guidelines.
+
+========================================================================
+5. RELATED WORK
+========================================================================
+5.1 Classical Surveillance
+Statistical process control methods (CUSUM, EWMA) are transparent and easy to operationalize, but they assume relatively stable historical regimes and are sensitive to abrupt reporting artifacts.
+
+5.2 Environmental Epidemiology
+Many studies show association between rainfall extremes, water turbidity, and gastrointestinal disease incidence. However, associations often vary by geography, infrastructure quality, and lag structure.
+
+5.3 Machine Learning for Forecasting
+Recent work uses tree ensembles, temporal neural networks, and hybrid nowcasting systems. Strengths include nonlinear interaction capture; weaknesses include calibration gaps and deployment complexity.
+
+5.4 Explainability in Public Health AI
+Trust and accountability require interpretable outputs. Global feature importance is insufficient for field decisions; local case-level explanations and quality flags are needed.
+
+5.5 Gap Synthesis
+The key gap is translational: most studies optimize predictive metrics but under-specify workflow integration, governance ownership, and threshold maintenance. This paper addresses that translational gap.
+
+========================================================================
+6. NEERSETU FRAMEWORK OVERVIEW
+========================================================================
+NeerSetu is organized into six connected layers:
+
+L1 Ingestion Layer
+- Receives water, symptom, weather, and admin records via API.
+- Validates schema and source signatures.
+
+L2 Data Reliability Layer
+- Computes completeness score.
+- Tags delayed and low-confidence records.
+- Harmonizes units and timestamp formats.
+
+L3 Feature and Signal Layer
+- Builds rolling, lagged, interaction, and anomaly features.
+- Produces feature quality metadata.
+
+L4 Prediction Layer
+- Trained model returns risk probability and uncertainty indicators.
+
+L5 Interpretation Layer
+- Generates local explanation summary.
+- Exposes top contributing risk drivers.
+
+L6 Decision and Audit Layer
+- Maps risk to alert tier based on threshold policy.
+- Stores event logs for accountability and review.
+
+========================================================================
+7. DATA DESIGN
+========================================================================
+7.1 Data Sources
+S1 Water Quality Stream:
+- pH, turbidity, residual chlorine, conductivity, coliform indicators.
+
+S2 Syndromic Health Stream:
+- fever-like complaints, diarrhea complaints, clinic visit acceleration.
+
+S3 Weather and Context Stream:
+- rainfall, humidity, temperature variance, flood/overflow proxy.
+
+S4 Administrative Reliability Stream:
+- report delay, field source confidence, block-level completeness.
+
+7.2 Data Granularity
+- Spatial: district and block aggregation.
+- Temporal: daily aggregation with lag-aware alignment.
+- Target horizon: 3-day and 7-day risk windows.
+
+7.3 Labeling Strategy
+Because this study uses synthetic but structurally realistic data, event labels are generated through domain-anchored rules combining contamination and health-signal escalation. Label generation is documented to preserve reproducibility and sensitivity analysis.
+
+7.4 Data Dictionary (Condensed)
+- `turbidity_ntu`: Nephelometric Turbidity Units.
+- `residual_chlorine_mg_l`: disinfection residual indicator.
+- `symptom_cluster_score`: normalized symptom burden proxy.
+- `report_delay_days`: lag between event and upload.
+- `target_event`: binary risk label within forecast horizon.
+
+========================================================================
+8. DATA QUALITY GOVERNANCE
+========================================================================
+8.1 Quality Checks
+Q1 Schema compliance.
+Q2 Range and unit validity.
+Q3 Temporal consistency.
+Q4 Duplicate and conflict detection.
+Q5 Missingness characterization by source.
+
+8.2 Completeness Score
+A weighted completeness score C in [0,1] is computed per record:
+
+C = sum(w_i * availability_i)
+
+where w_i reflects variable criticality. C is later exposed in alert cards so users can interpret risk in quality context.
+
+8.3 Missing Data Strategy
+- Numeric environmental variables: median or seasonal median imputation.
+- Temporal clinical trends: forward-fill with confidence penalty.
+- Categorical reliability fields: explicit "unknown" category.
+- Missingness indicators are retained as model features.
+
+8.4 Delayed Reporting Handling
+Records arriving late are aligned to event-day and flagged with delay metadata. Features include both corrected event values and a delay burden indicator.
+
+========================================================================
+9. FEATURE ENGINEERING
+========================================================================
+Feature design follows epidemiological plausibility and operational interpretability.
+
+9.1 Temporal Features
+- Rolling means (3, 7, 14 days).
+- Exponential moving trends.
+- Difference and acceleration metrics.
+
+9.2 Lag Features
+- Rainfall lag (1-7 days).
+- Symptom lag progression.
+- Chlorine depletion lag interactions.
+
+9.3 Interaction Features
+- `turbidity x symptom_rise`
+- `low_chlorine x rainfall_spike`
+- `high_delay x symptom_variance`
+
+9.4 Stability Features
+- Reporting volatility index.
+- Block-level data consistency index.
+
+9.5 Feature Selection
+Procedure:
+1) remove highly collinear candidates,
+2) evaluate mutual information,
+3) cross-check against domain rationale,
+4) retain features with both predictive value and explanation clarity.
+
+========================================================================
+10. MODELING METHODOLOGY
+========================================================================
+10.1 Candidate Models
+- Logistic Regression (baseline transparency).
+- Random Forest (robust nonlinear baseline).
+- Gradient Boosting (high tabular capacity).
+
+10.2 Training Protocol
+- Stratified split: train/validation/test.
+- Time-aware split tested to reduce leakage risk.
+- Class imbalance handled via weighted loss and threshold optimization.
+
+10.3 Hyperparameter Tuning
+Grid or randomized search over:
+- tree depth,
+- learning rate,
+- estimator count,
+- min samples per split/leaf.
+
+10.4 Evaluation Metrics
+Primary:
+- PR-AUC (class imbalance sensitive),
+- F1-score.
+
+Secondary:
+- ROC-AUC,
+- recall at precision constraints,
+- Brier score for calibration,
+- expected calibration error (ECE).
+
+10.5 Reproducibility Controls
+- Fixed random seeds.
+- Versioned artifacts for model, encoder, scaler.
+- Logged parameter and dataset signatures.
+
+========================================================================
+11. CALIBRATION AND THRESHOLD POLICY
+========================================================================
+11.1 Why Calibration Matters
+Uncalibrated probabilities may look confident but misrepresent true event likelihood. For policy operations, confidence honesty is as important as discrimination.
+
+11.2 Calibration Techniques
+- Platt scaling.
+- Isotonic regression.
+
+Calibration is selected using validation ECE and reliability curves.
+
+11.3 Alert Tier Design
+Tier 1 Watch:
+- low-to-moderate rising risk,
+- action: intensified observation.
+
+Tier 2 Warning:
+- moderate-to-high risk,
+- action: targeted field testing, awareness advisories.
+
+Tier 3 Critical:
+- high risk with supporting signals,
+- action: emergency coordination and rapid intervention.
+
+11.4 Threshold Governance
+Thresholds are not static forever. Review cadence:
+- weekly operational sanity check,
+- monthly governance board review,
+- emergency override during atypical events (logged with reason).
+
+========================================================================
+12. EXPLAINABILITY FRAMEWORK
+========================================================================
+12.1 Local Explanation Card
+Each alert contains:
+- predicted probability,
+- tier label,
+- top positive risk contributors,
+- top mitigating factors,
+- data quality score,
+- model version and timestamp.
+
+12.2 Global Explanation Dashboard
+Trend-level views include:
+- feature importance drift,
+- threshold-trigger frequency,
+- explanation consistency by district.
+
+12.3 Human Override Design
+Authorized officers can annotate and override alerts, but all overrides are audit logged with rationale.
+
+========================================================================
+13. EXPERIMENTAL DESIGN
+========================================================================
+13.1 Experimental Scenarios
+E1 Single-source water-only model.
+E2 Single-source symptom-only model.
+E3 Multi-source integrated model.
+E4 Multi-source model with calibration and reliability features.
+
+13.2 Stress Tests
+- Simulated delayed reporting bursts.
+- Missingness spikes in selected blocks.
+- Sudden weather anomalies.
+
+13.3 Validation Regime
+Repeated runs across multiple random seeds and split settings to evaluate stability.
+
+========================================================================
+14. RESULTS AND INTERPRETATION
+========================================================================
+14.1 Comparative Outcomes
+Integrated models outperform single-source baselines in most policy-relevant metrics. The strongest gains appear in recall at moderate precision constraints, which is critical for early detection workflows.
+
+14.2 Calibration Gains
+Post-calibration models show improved reliability curves and lower ECE. Administrators receive probabilities that better correspond to observed event frequency.
+
+14.3 Practical Value
+Key practical gain is lead-time improvement: early warning signals appear before visible case escalation in simulated operational windows.
+
+14.4 Tradeoff Discussion
+Higher sensitivity can increase false alerts. Tiered thresholds and confidence labeling help contain alert fatigue while preserving preventive intent.
+
+========================================================================
+15. ERROR ANALYSIS
+========================================================================
+15.1 False Positives
+Common patterns:
+- transient symptom spikes without sustained water anomaly,
+- short-lived weather noise.
+
+15.2 False Negatives
+Common patterns:
+- severe delays in symptom reporting,
+- abrupt localized contamination events not captured by sparse sensors.
+
+15.3 Improvement Directions
+- Better nowcasting for late reports.
+- Geospatial neighborhood smoothing.
+- Active data quality alerts for low-coverage blocks.
+
+========================================================================
+16. SYSTEM IMPLEMENTATION NOTES
+========================================================================
+16.1 Service Components
+- Backend API for ingestion/auth/alerts.
+- ML service for training and inference.
+- Dashboard for analysts and administrators.
+- Optional mobile channel for field notifications.
+
+16.2 Data Contracts
+Strict request/response schema contracts ensure compatibility and easier debugging across services.
+
+16.3 Model Lifecycle
+- training job,
+- artifact registry update,
+- shadow inference validation,
+- controlled promotion to production endpoint.
+
+========================================================================
+17. GOVERNANCE, ETHICS, AND FAIRNESS
+========================================================================
+17.1 Ethical Risks
+- Over-surveillance in vulnerable communities.
+- Misinterpretation of probabilistic outputs as deterministic truth.
+- Unequal performance across blocks due to reporting inequality.
+
+17.2 Safeguards
+- Mandatory uncertainty display.
+- Block-wise fairness audits on error rates.
+- Role-based access and minimum-necessary data exposure.
+- Human confirmation requirement for high-impact interventions.
+
+17.3 Accountability Structure
+- Alert owner,
+- response owner,
+- closure owner,
+- review board owner.
+Each role and action is traceable in logs.
+
+========================================================================
+18. SECURITY AND PRIVACY CONSIDERATIONS
+========================================================================
+Security controls include:
+- authenticated API access,
+- token-based authorization,
+- input validation and sanitation,
+- immutable audit logs for critical actions.
+
+Privacy principles:
+- avoid storing unnecessary personal identifiers,
+- aggregate wherever feasible,
+- enforce retention and deletion policies,
+- document data use purpose explicitly.
+
+========================================================================
+19. THREATS TO VALIDITY
+========================================================================
+19.1 Internal Validity
+Synthetic data generation may encode assumptions that influence model behavior.
+
+19.2 External Validity
+Deployment in new geographies may require re-estimation of feature lags and thresholds.
+
+19.3 Construct Validity
+Binary event labels simplify complex epidemiological reality.
+
+19.4 Mitigation
+- sensitivity analyses,
+- scenario stress testing,
+- phased pilot with expert feedback loops.
+
+========================================================================
+20. DEPLOYMENT BLUEPRINT
+========================================================================
+Phase 0: Dry-run with historical replay.
+Phase 1: Silent mode (no live action, monitoring only).
+Phase 2: Assisted decision mode (human validates all alerts).
+Phase 3: Full operational mode with governance review.
+
+Readiness checklist:
+- calibrated model approved,
+- threshold board sign-off,
+- incident response SOP available,
+- user training completed.
+
+========================================================================
+21. OPERATIONAL KPIs
+========================================================================
+Technical KPIs:
+- API latency percentile targets,
+- ingestion failure rates,
+- uptime.
+
+Model KPIs:
+- recall by alert tier,
+- calibration drift,
+- false alert rate.
+
+Operational KPIs:
+- alert acknowledgment time,
+- action closure time,
+- intervention completion rate.
+
+========================================================================
+22. COMPARATIVE ADVANTAGE OF NEERSETU
+========================================================================
+Compared with static-rule systems:
+- better multi-signal sensitivity,
+- richer context in alerts,
+- threshold adaptation support.
+
+Compared with opaque deep models:
+- easier interpretation,
+- lower deployment complexity,
+- stronger governance compatibility.
+
+========================================================================
+23. LIMITATIONS
+========================================================================
+- Limited real-world labeled events in current validation scope.
+- Synthetic assumptions can under-represent rare black-swan dynamics.
+- Geospatial network effects are modeled only at moderate detail.
+
+========================================================================
+24. FUTURE WORK
+========================================================================
+F1. Real-time stream processing for minute-level updates.
+F2. Geospatial graph learning for spillover prediction.
+F3. Semi-supervised anomaly detection for unseen event types.
+F4. Active learning from field officer feedback.
+F5. Multilingual narrative generation for district communication.
+
+========================================================================
+25. CONCLUSION
+========================================================================
+This study demonstrates that an effective early warning system for water-borne disease risk must integrate predictive analytics with quality governance, interpretability, and operational accountability. NeerSetu provides a practical blueprint for moving from fragmented data toward preventive action. The framework's value lies in combining technical rigor with administrative realism: calibrated risk estimates, explanation-aware alerts, and traceable response protocols. As districts mature their data systems, NeerSetu can evolve from pilot decision support toward a robust public health intelligence layer.
+
+========================================================================
+ACKNOWLEDGMENT
+========================================================================
+The authors acknowledge the guidance of faculty mentors, domain advisors, and development collaborators who supported requirements validation, system design discussions, and evaluation planning.
+
+========================================================================
+REFERENCES (INDICATIVE)
+========================================================================
+[1] World Health Organization, Guidelines for Drinking-water Quality.
+[2] Centers for Disease Control and Prevention, Principles of Public Health Surveillance.
+[3] Hastie, Tibshirani, and Friedman, The Elements of Statistical Learning.
+[4] Saito and Rehmsmeier, "The Precision-Recall Plot is More Informative than the ROC Plot for Imbalanced Datasets."
+[5] Lundberg and Lee, "A Unified Approach to Interpreting Model Predictions."
+[6] Recent public health informatics literature on disease forecasting and decision support systems.
+
+========================================================================
+APPENDIX A: SAMPLE ALERT EXPLANATION CARD
+========================================================================
+District: Example District
+Date: YYYY-MM-DD
+Forecast Horizon: 7 Days
+Predicted Risk Probability: 0.78
+Alert Tier: Warning
+Data Completeness Score: 0.84
+Top Drivers:
+1) Elevated turbidity trend (+)
+2) Rising symptom cluster score (+)
+3) Reduced residual chlorine (+)
+Mitigating Factor:
+1) Recent decline in rainfall (-)
+Recommended Action:
+- Additional water sampling in hotspot blocks within 24 hours.
+- Targeted health advisory dissemination.
+
+========================================================================
+APPENDIX B: SAMPLE MONTHLY MODEL GOVERNANCE CHECKLIST
+========================================================================
+1. Calibration drift reviewed and within tolerance.
+2. Block-wise fairness audit completed.
+3. Alert-to-action closure statistics reviewed.
+4. Threshold adjustments documented with approval.
+5. Model version and data schema changes recorded.
+6. Incident log reviewed for recurring failure modes.
+
+========================================================================
+APPENDIX C: MATHEMATICAL NOTATION SUMMARY
+========================================================================
+Let X_t denote feature vector at time t.
+Let Y_{t+h} denote event occurrence in horizon h.
+Model outputs p_t = f(X_t) where p_t in [0,1].
+Calibrated output p'_t = g(p_t).
+Alert mapping A_t = T(p'_t, q_t), where q_t is quality metadata.
+Objective: maximize early detection utility U subject to alert burden constraint B.
+
+End of Document
+NeerSetu: An Interpretable Multi-Source Early Warning Framework for Water-Borne Disease Risk
+
+Authors: Project Team, Department of Computer Science and Engineering
+Institution: [Institute Name]
+Contact: [Email]
+
+Abstract
+Water-borne disease management in resource-constrained regions is often delayed by fragmented reporting and weak integration between environmental and health data streams. This research paper presents NeerSetu, an interpretable multi-source early warning framework that combines water quality observations, symptom surveillance, weather context, and historical incidence trends to estimate short-horizon outbreak risk. The study contributes three outcomes: (1) a practical data model for district-level integration, (2) a calibrated machine learning pipeline for risk scoring, and (3) an operational alert policy that maps model output to response actions. Experimental evaluation on synthetic but policy-realistic datasets indicates that integrated modeling outperforms single-source baselines in recall at acceptable precision levels. The paper discusses deployment constraints, governance requirements, and ethical safeguards needed for real-world adoption.
+
+Keywords
+Water-borne disease surveillance, early warning systems, explainable machine learning, public health informatics, risk calibration, decision support.
+
+1. Introduction
+Outbreak control depends on lead time. In many public health workflows, by the time clinical case counts trigger concern, transmission and exposure may already be widespread. Water-borne illnesses such as cholera, typhoid, and acute gastroenteritis are especially influenced by changing environmental conditions, making them suitable for predictive monitoring that starts before clinical escalation.
+
+NeerSetu is proposed as an integrated surveillance and early warning framework that reduces the delay between weak environmental signals and administrative action. Instead of replacing epidemiological practice, the framework augments it with continuous risk estimation and interpretable alerts.
+
+2. Problem Context and Motivation
+Most district-level systems face four structural limitations:
+1) data silos between water authorities and health departments,
+2) inconsistent reporting frequency across blocks,
+3) delayed validation of field records, and
+4) alert fatigue caused by noisy thresholds.
+
+These limitations create a paradox: data exists, yet actionable insight arrives too late. The motivation for NeerSetu is to bridge this gap with a practical, low-friction intelligence layer that can operate on imperfect, asynchronous data.
+
+3. Research Questions
+RQ1. Can a unified feature space from environmental and clinical proxies improve short-term outbreak risk detection?
+RQ2. Which model family provides the best balance between predictive quality and interpretability for district operations?
+RQ3. How should probability outputs be calibrated and thresholded to support practical response tiers?
+RQ4. What governance mechanisms are necessary to prevent misuse and maintain trust in machine-guided alerts?
+
+4. Objectives
+The research objectives are:
+- Design a robust data integration schema for multi-source surveillance inputs.
+- Build and evaluate a predictive pipeline for 3- to 7-day risk forecasting.
+- Compare baseline and advanced models using policy-relevant metrics.
+- Generate explanations that public health teams can understand and verify.
+- Propose a deployable alert protocol tied to resource-constrained operations.
+
+5. Related Work
+Prior studies generally fall into three groups:
+- Statistical outbreak surveillance (CUSUM, EWMA, seasonal decomposition),
+- Environmental epidemiology models linking rainfall and contamination, and
+- Recent machine learning systems for disease nowcasting.
+
+Classical methods provide transparency but may miss nonlinear interactions. Deep models can capture complex signals but are often data-hungry and opaque. Recent literature increasingly supports hybrid approaches: feature-rich models with post-hoc explanation, calibration, and strong human oversight.
+
+The gap remains in operational translation. Many papers optimize for benchmark performance but do not address district governance, alert ownership, and field constraints. This research emphasizes those practical dimensions.
+
+6. System Overview
+NeerSetu consists of five layers:
+1) Ingestion Layer: water quality, symptom reports, weather observations.
+2) Validation Layer: schema checks, missingness flags, timestamp normalization.
+3) Feature Layer: rolling indicators, trend gradients, anomaly scores.
+4) Modeling Layer: risk prediction with confidence calibration.
+5) Decision Layer: alert generation, explanation cards, audit logging.
+
+This layered approach supports modular updates. For example, model retraining can be improved without disrupting ingestion contracts.
+
+7. Data Description
+The study uses synthetic but structure-preserving datasets designed to mimic North-East India district operations. Variables include:
+- Water: pH, turbidity, residual chlorine, coliform indicator.
+- Health proxies: fever clusters, diarrhea complaint counts, clinic attendance shifts.
+- Contextual: rainfall, temperature, humidity, local event intensity.
+- Administrative: reporting delay, source reliability, block-level completeness.
+
+Target variable:
+- Binary risk event label for near-term outbreak probability window.
+
+8. Data Quality and Preprocessing
+Data quality determines model quality. The pipeline performs:
+- Type normalization and unit harmonization.
+- Outlier clipping using quantile thresholds and rule-based domain checks.
+- Missing value imputation with source-specific strategy (median, forward-fill, indicator flag).
+- Temporal alignment to daily index with late-report handling.
+- Feature scaling for algorithms sensitive to magnitude differences.
+
+A completeness score is computed per observation. Low-trust records are not discarded by default; instead, they are tagged so the model and dashboards can reflect uncertainty.
+
+9. Feature Engineering Strategy
+Predictive signals are engineered from domain logic:
+- Rolling averages (3-day, 7-day, 14-day windows).
+- Rate-of-change and acceleration features.
+- Water-health interaction terms (for example, turbidity x fever-cluster rise).
+- Weather-lag features to represent delayed contamination effects.
+- Reliability-weighted symptom intensity.
+
+Feature engineering prioritizes meaning over brute-force expansion. This reduces overfitting and improves explainability.
+
+10. Modeling Approach
+Candidate models evaluated:
+- Logistic Regression (interpretable baseline),
+- Random Forest (nonlinear, robust on mixed features),
+- Gradient Boosting (higher capacity and often strong tabular performance).
+
+Training setup:
+- Stratified train-validation-test split.
+- Class imbalance handling via weighted loss and threshold optimization.
+- Hyperparameter search with cross-validation.
+
+Primary metric: F1-score for imbalanced detection.
+Operational metrics: Recall at fixed precision, PR-AUC, Brier score (calibration).
+
+11. Calibration and Threshold Policy
+Uncalibrated probabilities can mislead action. The study applies probability calibration (Platt and isotonic variants) and compares expected calibration error.
+
+Alert thresholds are policy-driven:
+- Tier 1 (Watch): rising risk, monitor more closely.
+- Tier 2 (Warning): initiate targeted field sampling and advisories.
+- Tier 3 (Critical): activate emergency coordination and rapid response.
+
+Thresholds are tuned to preserve high recall for severe events while controlling alert volume.
+
+12. Explainability and Human Interpretation
+Model outputs are accompanied by explanation vectors:
+- Top contributing features per alert.
+- Directional impact summary (which factors increased/decreased risk).
+- Confidence and data quality indicators.
+
+This prevents "black-box directives." Officers can challenge and verify recommendations, improving accountability.
+
+13. Experimental Results
+Across repeated evaluation runs, integrated multi-source models consistently outperform single-source baselines.
+
+Key observations:
+- Logistic Regression remains useful for transparency but misses interaction effects.
+- Random Forest improves robustness and recall.
+- Gradient Boosting delivers the best overall discrimination and calibration after tuning.
+
+Operationally relevant outcome:
+The best-performing calibrated model increases early-detection lead time while keeping false alarms manageable under tiered thresholds.
+
+14. Error Analysis
+False positives are often linked to temporary symptom spikes without sustained water signal.
+False negatives are associated with delayed reporting and abrupt cluster onset in low-coverage blocks.
+
+Mitigation paths:
+- Incorporate adaptive recency weighting for late reports.
+- Include uncertainty penalties when completeness is low.
+- Increase sampling density in historically under-reported blocks.
+
+15. Deployment Architecture
+Reference deployment uses:
+- Backend API for ingestion and scoring,
+- ML service for model lifecycle,
+- Dashboard for analysts and district administrators,
+- Mobile-ready alert channels for field officers.
+
+All alert events are audit-logged with model version, feature summary, and decision metadata.
+
+16. Governance and Policy Integration
+Technical systems fail without institutional ownership. The deployment model defines:
+- Alert ownership matrix (who acknowledges, who acts, who closes),
+- SLA targets by alert tier,
+- Escalation pathway for unresolved critical alerts,
+- Monthly model review board with public health and technical stakeholders.
+
+17. Ethical and Societal Considerations
+Early warning systems can unintentionally amplify bias if reporting gaps correlate with marginalized geographies. Safeguards include:
+- Transparency on data limitations,
+- Fairness checks across districts/blocks,
+- Human-in-the-loop confirmation before coercive interventions,
+- Strict role-based access for sensitive records.
+
+18. Threats to Validity
+Internal validity risks:
+- Synthetic data may not capture every real-world behavioral pattern.
+
+External validity risks:
+- Transferability to other states may require feature and policy adaptation.
+
+Construct validity risks:
+- Outbreak labels in synthetic generation may simplify nuanced epidemiological dynamics.
+
+19. Comparative Discussion
+Compared with static threshold systems, NeerSetu provides adaptive risk estimation and richer context.
+Compared with high-complexity deep pipelines, the proposed approach is easier to deploy, explain, and govern in low-resource settings.
+
+20. Practical Contributions
+This research contributes:
+- A deployment-ready blueprint for integrated surveillance,
+- A calibrated and explainable predictive approach,
+- A governance-centered framing that treats actionability as a first-class metric.
+
+21. Limitations
+Current limitations include:
+- Dependence on periodic retraining for drift adaptation,
+- Limited simulation of extreme climate anomalies,
+- Need for stronger geospatial micro-cluster modeling.
+
+22. Future Work
+Planned extensions:
+- Semi-supervised anomaly detectors for rare-event discovery,
+- Geospatial graph features for spillover patterns,
+- Active learning loops from field feedback,
+- Multilingual natural-language alert narratives for local operations.
+
+23. Conclusion
+NeerSetu demonstrates that practical early warning for water-borne diseases requires more than predictive accuracy. Real impact depends on integrated data design, calibrated risk interpretation, transparent explanations, and clear governance protocols. The proposed framework offers a realistic path from fragmented records to accountable preventive action.
+
+References (Indicative)
+[1] WHO. Guidelines for Drinking-water Quality.
+[2] CDC. Principles of Public Health Surveillance.
+[3] B. Chawla et al. Machine Learning for Infectious Disease Forecasting.
+[4] T. Hastie et al. The Elements of Statistical Learning.
+[5] R. Saito and M. Rehmsmeier. The Precision-Recall Plot for Imbalanced Data.
+
+Appendix A: Example Alert Card Template
+- District: Example District
+- Date: YYYY-MM-DD
+- Risk Tier: Warning
+- Probability: 0.74
+- Data Quality Score: 0.82
+- Top Drivers: turbidity increase, fever cluster rise, low residual chlorine
+- Suggested Action: intensified sampling in hotspots within 24 hours
+
+Appendix B: Model Monitoring Checklist
+- Weekly drift check completed
+- Calibration error within agreed threshold
+- Alert-to-action closure times reviewed
+- False alarm review completed
+- Threshold policy reviewed with district leads

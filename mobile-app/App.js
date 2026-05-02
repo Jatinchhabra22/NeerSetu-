@@ -47,15 +47,8 @@ function ErrorFallback({ error, resetErrorBoundary }) {
   );
 }
 
-// Loading Component
-function LoadingScreen() {
-  return (
-    <View style={styles.loadingContainer}>
-      <ActivityIndicator size="large" color="#2196F3" />
-      <Text style={styles.loadingText}>Loading NeerSetu...</Text>
-    </View>
-  );
-}
+// Import LoadingScreen component
+import LoadingScreen from './src/components/LoadingScreen';
 
 export default function App() {
   const [isReady, setIsReady] = useState(false);
@@ -79,13 +72,14 @@ export default function App() {
         setTimeout(() => {
           console.log('App: Initialization complete');
           setIsReady(true);
-        }, 2000);
+        }, 1000);
 
         return unsubscribe;
       } catch (error) {
         console.error('App: Initialization error:', error);
-        Alert.alert('Error', 'Failed to initialize app');
+        // Don't show error alert, just continue
         setLoading(false);
+        setIsReady(true);
       }
     };
 
@@ -99,7 +93,11 @@ export default function App() {
   }, []);
 
   if (!isReady || loading) {
-    return <LoadingScreen />;
+    return (
+      <LanguageProvider>
+        <LoadingScreen />
+      </LanguageProvider>
+    );
   }
 
   return (

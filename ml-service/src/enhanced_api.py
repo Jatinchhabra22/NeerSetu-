@@ -19,10 +19,10 @@ import asyncio
 from contextlib import asynccontextmanager
 
 # Import our enhanced modules
-from config import config
-from logger import ml_logger
-from enhanced_ml_pipeline import enhanced_ml_pipeline
-from enhanced_predictor import enhanced_predictor
+from .config import config
+from .logger import ml_logger
+from .enhanced_ml_pipeline import enhanced_ml_pipeline
+from .enhanced_predictor import enhanced_predictor
 
 # Configure logging
 logging.basicConfig(

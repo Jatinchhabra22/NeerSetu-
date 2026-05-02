@@ -8,6 +8,8 @@ import Analytics from './pages/Analytics';
 import Simulator from './pages/Simulator';
 import Alerts from './pages/Alerts';
 import Reports from './pages/Reports';
+import Users from './pages/Users';
+import Settings from './pages/Settings';
 import './App.css';
 
 function App() {
@@ -29,17 +31,12 @@ function App() {
     localStorage.setItem('neersetu_user', JSON.stringify(userData));
   };
 
-  const handleLogout = () => {
-    setUser(null);
-    localStorage.removeItem('neersetu_user');
-  };
-
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-cyan-100">
+      <div className="flex items-center justify-center min-h-screen bg-slate-950">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 text-lg">Loading NeerSetu Dashboard...</p>
+          <p className="text-slate-200 text-lg">Loading NeerSetu Dashboard...</p>
         </div>
       </div>
     );
@@ -50,7 +47,7 @@ function App() {
       {!user ? (
         <Login onLogin={handleLogin} />
       ) : (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen dark-dashboard">
           <div className="flex">
             <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
             
@@ -59,7 +56,7 @@ function App() {
               <div className="lg:hidden fixed top-4 left-4 z-50">
                 <button
                   onClick={() => setSidebarOpen(true)}
-                  className="p-2 rounded-lg bg-white shadow-lg border border-gray-200 text-gray-700 hover:bg-gray-50"
+                  className="p-2 rounded-lg bg-slate-900 shadow-lg border border-slate-700 text-slate-100 hover:bg-slate-800"
                 >
                   <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -75,6 +72,8 @@ function App() {
                   <Route path="/simulator" element={<Simulator />} />
                   <Route path="/alerts" element={<Alerts />} />
                   <Route path="/reports" element={<Reports />} />
+                  <Route path="/users" element={<Users />} />
+                  <Route path="/settings" element={<Settings />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </div>

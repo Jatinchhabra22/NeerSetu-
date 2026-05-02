@@ -22,26 +22,26 @@ const AlertCard = ({ alert, onAcknowledge, onResolve, onDismiss }) => {
   };
 
   const getAlertColor = (type, priority) => {
-    if (type === 'emergency' || priority === 'critical') return 'border-red-200 bg-red-50';
-    if (priority === 'high') return 'border-orange-200 bg-orange-50';
-    if (priority === 'medium') return 'border-yellow-200 bg-yellow-50';
-    return 'border-blue-200 bg-blue-50';
+    if (type === 'emergency' || priority === 'critical') return 'border-red-500/30 bg-red-500/10';
+    if (priority === 'high') return 'border-orange-500/30 bg-orange-500/10';
+    if (priority === 'medium') return 'border-yellow-500/30 bg-yellow-500/10';
+    return 'border-blue-500/30 bg-blue-500/10';
   };
 
   const getStatusColor = (status) => {
     switch (status) {
       case 'sent':
-        return 'text-yellow-600 bg-yellow-100';
+        return 'text-yellow-200 bg-yellow-500/20 border border-yellow-500/30';
       case 'delivered':
-        return 'text-blue-600 bg-blue-100';
+        return 'text-blue-200 bg-blue-500/20 border border-blue-500/30';
       case 'acknowledged':
-        return 'text-green-600 bg-green-100';
+        return 'text-green-200 bg-green-500/20 border border-green-500/30';
       case 'resolved':
-        return 'text-gray-600 bg-gray-100';
+        return 'text-slate-200 bg-slate-600/30 border border-slate-500/30';
       case 'escalated':
-        return 'text-red-600 bg-red-100';
+        return 'text-red-200 bg-red-500/20 border border-red-500/30';
       default:
-        return 'text-gray-600 bg-gray-100';
+        return 'text-slate-200 bg-slate-600/30 border border-slate-500/30';
     }
   };
 
@@ -56,13 +56,13 @@ const AlertCard = ({ alert, onAcknowledge, onResolve, onDismiss }) => {
           {getAlertIcon(alert.type)}
           <div className="flex-1 min-w-0">
             <div className="flex items-center space-x-2 mb-1">
-              <h4 className="text-sm font-semibold text-gray-900">{alert.title}</h4>
+              <h4 className="text-sm font-semibold text-slate-100">{alert.title}</h4>
               <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(alert.status)}`}>
                 {alert.status}
               </span>
             </div>
-            <p className="text-sm text-gray-700 mb-2">{alert.message}</p>
-            <div className="flex items-center space-x-4 text-xs text-gray-500">
+            <p className="text-sm text-slate-200 mb-2">{alert.message}</p>
+            <div className="flex items-center space-x-4 text-xs text-slate-400">
               <span>Village: {alert.village}</span>
               <span>•</span>
               <span>{formatTime(alert.createdAt)}</span>
@@ -80,7 +80,7 @@ const AlertCard = ({ alert, onAcknowledge, onResolve, onDismiss }) => {
           {alert.status === 'sent' && (
             <button
               onClick={() => onAcknowledge(alert.id)}
-              className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="inline-flex items-center px-3 py-1 border border-blue-400/30 text-xs font-medium rounded-md text-blue-100 bg-blue-500/80 hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <CheckCircleIcon className="h-3 w-3 mr-1" />
               Acknowledge
@@ -90,7 +90,7 @@ const AlertCard = ({ alert, onAcknowledge, onResolve, onDismiss }) => {
           {alert.status === 'acknowledged' && (
             <button
               onClick={() => onResolve(alert.id)}
-              className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            className="inline-flex items-center px-3 py-1 border border-green-400/30 text-xs font-medium rounded-md text-green-100 bg-green-500/80 hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               Resolve
             </button>
@@ -98,7 +98,7 @@ const AlertCard = ({ alert, onAcknowledge, onResolve, onDismiss }) => {
           
           <button
             onClick={() => onDismiss(alert.id)}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-slate-400 hover:text-slate-200"
           >
             <XMarkIcon className="h-4 w-4" />
           </button>
@@ -106,8 +106,8 @@ const AlertCard = ({ alert, onAcknowledge, onResolve, onDismiss }) => {
       </div>
       
       {alert.escalationLevel > 1 && (
-        <div className="mt-3 pt-3 border-t border-gray-200">
-          <div className="flex items-center text-xs text-orange-600">
+        <div className="mt-3 pt-3 border-t border-slate-700">
+          <div className="flex items-center text-xs text-orange-300">
             <ClockIcon className="h-3 w-3 mr-1" />
             Escalated to Level {alert.escalationLevel}
           </div>

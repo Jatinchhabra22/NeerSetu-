@@ -150,9 +150,20 @@ const Reports = () => {
   };
 
   const downloadReport = (reportId) => {
-    // Simulate download
-    console.log(`Downloading report ${reportId}`);
-    // In real implementation, this would trigger a file download
+    const report = reports.find((r) => r.id === reportId);
+    if (!report) return;
+    const csvRows = Object.entries(report.summary || {}).map(([k, v]) => {
+      const value = Array.isArray(v) ? v.join('; ') : v;
+      return `${k},${value}`;
+    });
+    const csv = ['metric,value', ...csvRows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${report.title.replace(/\s+/g, '_').toLowerCase()}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   const getReportIcon = (type) => {
@@ -330,6 +341,12 @@ const Reports = () => {
                   </span>
                   
                   <button
+                    onClick={() => setSelectedReport(report)}
+                    className="inline-flex items-center px-3 py-1 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                  >
+                    View
+                  </button>
+                  <button
                     onClick={() => downloadReport(report.id)}
                     className="inline-flex items-center px-3 py-1 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                   >
@@ -342,6 +359,31 @@ const Reports = () => {
           ))}
         </div>
       </div>
+
+      {/* View Report Modal */}
+      {selectedReport && selectedReport !== 'new' && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">{selectedReport.title}</h3>
+              <button onClick={() => setSelectedReport(null)} className="text-gray-500">Close</button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+              {Object.entries(selectedReport.summary || {}).map(([key, value]) => (
+                <div key={key} className="p-3 rounded border border-gray-200">
+                  <p className="text-gray-500 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</p>
+                  <p className="text-gray-900 font-medium">{Array.isArray(value) ? value.join(', ') : String(value)}</p>
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-end mt-5">
+              <button onClick={() => downloadReport(selectedReport.id)} className="px-4 py-2 rounded bg-blue-600 text-white">
+                Download CSV
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Report Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">

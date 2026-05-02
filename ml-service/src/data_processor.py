@@ -15,7 +15,7 @@ from sklearn.feature_selection import SelectKBest, f_classif
 import warnings
 warnings.filterwarnings('ignore')
 
-from config import config
+from .config import config
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +63,17 @@ class MLDataProcessor:
                 logger.info(f"Loaded outbreak dataset: {datasets['outbreak'].shape}")
             else:
                 logger.warning(f"Outbreak dataset not found: {outbreak_path}")
+
+            # Optionally load synthetic extensions (non-destructive)
+            synthetic_health = os.path.join(config.DATASET_DIR, '6_Synthetic_Health_Surveillance_Data_NE_India.csv')
+            if os.path.exists(synthetic_health) and 'health' in datasets:
+                datasets['health'] = pd.concat([datasets['health'], pd.read_csv(synthetic_health)], ignore_index=True)
+                logger.info(f"Merged synthetic health rows: {datasets['health'].shape}")
+
+            synthetic_water = os.path.join(config.DATASET_DIR, '5_Synthetic_Water_Quality_Data_NE_India.csv')
+            if os.path.exists(synthetic_water) and 'water' in datasets:
+                datasets['water'] = pd.concat([datasets['water'], pd.read_csv(synthetic_water)], ignore_index=True)
+                logger.info(f"Merged synthetic water rows: {datasets['water'].shape}")
             
             return datasets
             
@@ -155,6 +166,9 @@ class MLDataProcessor:
             
             # Create a copy to avoid modifying original
             processed_df = df.copy()
+
+            # Normalize schema across dataset variants
+            processed_df = self._normalize_schema(processed_df)
             
             # Handle missing values
             processed_df = self._handle_missing_values(processed_df)
@@ -168,6 +182,10 @@ class MLDataProcessor:
             # Feature engineering
             if config.ENABLE_FEATURE_ENGINEERING:
                 processed_df = self._engineer_features(processed_df)
+
+            # Final cleanup for engineered NaNs/infs
+            processed_df = processed_df.replace([np.inf, -np.inf], np.nan)
+            processed_df = self._handle_missing_values(processed_df)
             
             # Remove duplicates
             processed_df = processed_df.drop_duplicates()
@@ -178,6 +196,43 @@ class MLDataProcessor:
         except Exception as e:
             logger.error(f"Error preprocessing data: {str(e)}")
             return df
+
+    def _normalize_schema(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Normalize commonly used feature names from raw datasets"""
+        rename_map = {
+            'diarrhea_cases': 'total_diarrhea_cases',
+            'fever_cases': 'total_fever_cases',
+            'vomiting_cases': 'total_vomiting_cases',
+            'households_affected': 'total_affected_population',
+            'pH': 'avg_ph',
+            'turbidity_ntu': 'avg_turbidity',
+            'bacteria_ecoli_cfu_100ml': 'avg_bacteria_ecoli',
+            'bacteria_coliform_cfu_100ml': 'avg_bacteria_coliform',
+            'dissolved_oxygen_mg_l': 'avg_dissolved_oxygen',
+            'nitrates_mg_l': 'avg_nitrates',
+            'phosphates_mg_l': 'avg_phosphates',
+            'heavy_metals_mg_l': 'avg_heavy_metals',
+            'chlorine_residual_mg_l': 'avg_chlorine_residual',
+            'fluoride_mg_l': 'avg_fluoride',
+            'arsenic_mg_l': 'avg_arsenic',
+            'is_potable': 'water_contaminated',
+            'daily_rainfall_mm': 'daily_rainfall',
+            'weekly_rainfall_mm': 'weekly_rainfall',
+            'monthly_rainfall_mm': 'monthly_rainfall',
+            'temperature_celsius': 'temperature',
+            'humidity_percent': 'humidity',
+            'outbreak': 'is_outbreak',
+            'risk_level': 'outbreak_level',
+        }
+        available = {k: v for k, v in rename_map.items() if k in df.columns and v not in df.columns}
+        if available:
+            df = df.rename(columns=available)
+        if 'water_contaminated' in df.columns:
+            # Convert potable flag to contamination where needed
+            numeric_col = pd.to_numeric(df['water_contaminated'], errors='coerce')
+            if numeric_col.dropna().isin([0, 1]).all():
+                df['water_contaminated'] = (1 - numeric_col.fillna(1)).astype(int)
+        return df
     
     def _handle_missing_values(self, df: pd.DataFrame) -> pd.DataFrame:
         """Handle missing values in the dataset"""
@@ -238,10 +293,11 @@ class MLDataProcessor:
         """Create target variable for outbreak prediction"""
         try:
             # If outbreak data is available, use it directly
-            if 'outbreak_level' in df.columns:
-                df['target'] = df['outbreak_level']
-            elif 'is_outbreak' in df.columns:
+            if 'is_outbreak' in df.columns:
                 df['target'] = df['is_outbreak'].astype(int)
+            elif 'outbreak_level' in df.columns:
+                level_map = {'Low': 0, 'Medium': 0, 'High': 1, 'Critical': 1}
+                df['target'] = df['outbreak_level'].map(level_map).fillna(0).astype(int)
             else:
                 # Create target based on health data
                 if 'total_diarrhea_cases' in df.columns:
@@ -491,7 +547,7 @@ class MLDataProcessor:
             self.feature_importance = feature_importance
             
             # Log feature importance
-            from logger import ml_logger
+            from .logger import ml_logger
             ml_logger.log_feature_importance(feature_importance)
             
             return feature_importance

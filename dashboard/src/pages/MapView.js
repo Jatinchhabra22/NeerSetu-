@@ -107,8 +107,8 @@ const MapView = () => {
     return 'Low';
   };
 
-  const getMarkerIcon = (status) => {
-    const color = getRiskColor(selectedVillage?.riskIndex || 0);
+  const getMarkerIcon = (riskIndex) => {
+    const color = getRiskColor(riskIndex);
     return new Icon({
       iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
       shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -196,7 +196,7 @@ const MapView = () => {
                   <div key={village.id}>
                     <Marker
                       position={[village.lat, village.lng]}
-                      icon={getMarkerIcon(village.status)}
+                      icon={getMarkerIcon(village.riskIndex)}
                       eventHandlers={{
                         click: () => setSelectedVillage(village)
                       }}

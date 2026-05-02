@@ -13,11 +13,11 @@ import os
 import warnings
 warnings.filterwarnings('ignore')
 
-from config import config
-from logger import ml_logger
-from data_processor import data_processor
-from model_trainer import model_trainer
-from enhanced_predictor import enhanced_predictor
+from .config import config
+from .logger import ml_logger
+from .data_processor import data_processor
+from .model_trainer import model_trainer
+from .enhanced_predictor import enhanced_predictor
 
 logger = logging.getLogger(__name__)
 

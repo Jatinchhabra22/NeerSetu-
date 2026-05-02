@@ -20,8 +20,8 @@ import xgboost as xgb
 import warnings
 warnings.filterwarnings('ignore')
 
-from config import config
-from logger import ml_logger
+from .config import config
+from .logger import ml_logger
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +47,7 @@ class ModelTrainer:
             )
             
             # Scale features
-            from data_processor import data_processor
+            from .data_processor import data_processor
             X_train_scaled = data_processor.scale_features(X_train, fit=True)
             X_test_scaled = data_processor.scale_features(X_test, fit=False)
             
@@ -161,7 +161,7 @@ class ModelTrainer:
             )
             
             # Scale features
-            from data_processor import data_processor
+            from .data_processor import data_processor
             X_train_scaled = data_processor.scale_features(X_train, fit=True)
             X_test_scaled = data_processor.scale_features(X_test, fit=False)
             
@@ -252,7 +252,7 @@ class ModelTrainer:
             joblib.dump(model, model_path)
             
             # Save scaler
-            from data_processor import data_processor
+            from .data_processor import data_processor
             scaler_path = os.path.join(config.MODEL_DIR, f"{model_name}_scaler.joblib")
             joblib.dump(data_processor.scaler, scaler_path)
             

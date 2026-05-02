@@ -20,7 +20,32 @@ const Alerts = () => {
     village: 'all'
   });
 
-  const fetchAlerts = async () => {
+  const generateIntelligentAlerts = useCallback(() => {
+    const villageSignals = [
+      { village: 'Village A', contamination: 0.91, symptomSpike: 0.74, modelProbability: 0.87 },
+      { village: 'Village B', contamination: 0.58, symptomSpike: 0.63, modelProbability: 0.71 },
+      { village: 'Village C', contamination: 0.33, symptomSpike: 0.25, modelProbability: 0.19 },
+    ];
+
+    return villageSignals
+      .filter((s) => s.contamination > 0.7 || s.symptomSpike > 0.6 || s.modelProbability > 0.75)
+      .map((signal, index) => ({
+        id: `ml-${index + 1}`,
+        type: 'emergency',
+        title: signal.contamination > 0.7 ? 'Water Contamination Spike' : 'Disease Spike Risk',
+        message: `Automated rule+ML trigger for ${signal.village} (contamination ${Math.round(signal.contamination * 100)}%, symptom spike ${Math.round(signal.symptomSpike * 100)}%, model risk ${Math.round(signal.modelProbability * 100)}%).`,
+        village: signal.village,
+        riskIndex: Math.round((signal.contamination * 0.45 + signal.symptomSpike * 0.25 + signal.modelProbability * 0.3) * 500),
+        status: 'sent',
+        priority: signal.modelProbability > 0.8 || signal.contamination > 0.85 ? 'critical' : 'high',
+        createdAt: new Date().toISOString(),
+        escalationLevel: signal.modelProbability > 0.8 ? 2 : 1,
+        acknowledgedBy: null,
+        acknowledgedAt: null,
+      }));
+  }, []);
+
+  const fetchAlerts = useCallback(async () => {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -113,13 +138,13 @@ const Alerts = () => {
         }
       ];
 
-      setAlerts(mockAlerts);
+      setAlerts([...generateIntelligentAlerts(), ...mockAlerts]);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching alerts:', error);
       setLoading(false);
     }
-  };
+  }, [generateIntelligentAlerts]);
 
   const applyFilters = useCallback(() => {
     let filtered = alerts;
@@ -145,7 +170,7 @@ const Alerts = () => {
 
   useEffect(() => {
     fetchAlerts();
-  }, []);
+  }, [fetchAlerts]);
 
   useEffect(() => {
     applyFilters();

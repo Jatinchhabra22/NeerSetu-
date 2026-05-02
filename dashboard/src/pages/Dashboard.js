@@ -275,17 +275,17 @@ const Dashboard = () => {
       {/* Bottom Grid */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
         {/* High Risk Villages */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+        <div className="bg-[#111827] rounded-xl shadow-lg border border-slate-700 p-6">
           <h3 className="text-xl font-bold text-gray-900 mb-4">High Risk Villages</h3>
           <div className="space-y-3">
             {stats.highRiskVillages.map((village) => (
-              <div key={village._id} className="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-200 hover:bg-red-100 transition-colors">
+              <div key={village._id} className="flex items-center justify-between p-4 bg-red-500/10 rounded-lg border border-red-500/30 hover:bg-red-500/15 transition-colors">
                 <div>
                   <h4 className="font-semibold text-gray-900">{village.village}</h4>
                   <p className="text-sm text-gray-600">Risk Index: {village.latestRiskIndex}</p>
                 </div>
                 <div className="text-right">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-500/20 text-red-200 border border-red-500/30">
                     Critical
                   </span>
                   <p className="text-xs text-gray-500 mt-1">{village.latestDate}</p>
@@ -296,7 +296,7 @@ const Dashboard = () => {
         </div>
 
         {/* Recent Alerts */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+        <div className="bg-[#111827] rounded-xl shadow-lg border border-slate-700 p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold text-gray-900">Recent Alerts</h3>
             <button className="text-blue-600 hover:text-blue-700 text-sm font-medium px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors">

@@ -28,7 +28,7 @@ class MLConfig:
     HEALTH_DATASET = os.getenv('HEALTH_DATASET', '1_Health_Surveillance_Data_NE_India.csv')
     WATER_DATASET = os.getenv('WATER_DATASET', '2_Water_Quality_Data_NE_India.csv')
     ENVIRONMENT_DATASET = os.getenv('ENVIRONMENT_DATASET', '3_Environmental_Rainfall_Data_NE_India.csv')
-    OUTBREAK_DATASET = os.getenv('OUTBREAK_DATASET', '4_Outbreak_Levels_Target_Data_NE_India.csv')
+    OUTBREAK_DATASET = os.getenv('OUTBREAK_DATASET', '4_Outbreak_Labels_Target_Data_NE_India.csv')
     
     # Model Training Configuration
     TEST_SIZE = float(os.getenv('TEST_SIZE', '0.2'))

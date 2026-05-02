@@ -18,8 +18,8 @@ shap = None
 import warnings
 warnings.filterwarnings('ignore')
 
-from config import config
-from logger import ml_logger
+from .config import config
+from .logger import ml_logger
 
 logger = logging.getLogger(__name__)
 

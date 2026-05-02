@@ -35,20 +35,20 @@ const Sidebar = ({ isOpen, onClose }) => {
       {/* Overlay for mobile */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 lg:hidden"
+          className="fixed inset-0 z-40 bg-slate-950/70 lg:hidden"
           onClick={onClose}
         />
       )}
 
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 w-52 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-52 bg-[#111827] border-r border-slate-700 shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="flex flex-col h-full">
           {/* Logo and User Profile */}
-          <div className="px-4 py-5 border-b border-gray-200">
+          <div className="px-4 py-5 border-b border-slate-700">
             <div className="flex items-center space-x-3 mb-4">
               <div className="w-10 h-10 rounded-lg overflow-hidden shadow-sm">
                 <img 
@@ -58,19 +58,19 @@ const Sidebar = ({ isOpen, onClose }) => {
                 />
               </div>
               <div>
-                <span className="text-lg font-bold text-gray-900">NeerSetu</span>
-                <p className="text-xs text-gray-500">Water Quality Monitor</p>
+                <span className="text-lg font-bold text-slate-100">NeerSetu</span>
+                <p className="text-xs text-slate-400">Water Quality Monitor</p>
               </div>
             </div>
             
             {/* User Profile */}
-            <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <span className="text-blue-600 font-semibold text-sm">AU</span>
+            <div className="flex items-center space-x-3 p-3 bg-slate-800 rounded-lg border border-slate-700">
+              <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center">
+                <span className="text-blue-300 font-semibold text-sm">AU</span>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">Admin User</p>
-                <p className="text-xs text-gray-500 truncate">admin@neersetu.com</p>
+                <p className="text-sm font-medium text-slate-100 truncate">Admin User</p>
+                <p className="text-xs text-slate-400 truncate">admin@neersetu.com</p>
               </div>
             </div>
           </div>
@@ -86,8 +86,8 @@ const Sidebar = ({ isOpen, onClose }) => {
                   onClick={onClose}
                   className={`flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
                     isActive(item.href)
-                      ? 'bg-blue-50 text-blue-700 shadow-sm border border-blue-200'
-                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:shadow-sm'
+                      ? 'bg-blue-500/20 text-blue-200 shadow-sm border border-blue-400/30'
+                      : 'text-slate-300 hover:bg-slate-800 hover:text-slate-100 hover:shadow-sm'
                   }`}
                 >
                   <Icon className="h-5 w-5 mr-3" />
@@ -98,11 +98,13 @@ const Sidebar = ({ isOpen, onClose }) => {
           </nav>
 
           {/* Emergency Alert Button */}
-          <div className="p-4 border-t border-gray-200">
+          <div className="p-4 border-t border-slate-700">
+            <Link to="/alerts" onClick={onClose} className="w-full block">
             <button className="w-full flex items-center justify-center px-4 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white text-sm font-semibold rounded-xl hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-lg hover:shadow-xl">
               <ExclamationTriangleIcon className="h-5 w-5 mr-2" />
               Emergency Alert
             </button>
+            </Link>
           </div>
         </div>
       </div>

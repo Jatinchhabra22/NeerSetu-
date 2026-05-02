@@ -11,9 +11,10 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useTranslation } from '../../contexts/LanguageContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useOffline } from '../../contexts/OfflineContext';
+import { useNotifications } from '../../contexts/NotificationContext';
 import StatsCard from '../../components/StatsCard';
 import RiskIndexCard from '../../components/RiskIndexCard';
 import AlertCard from '../../components/AlertCard';
@@ -24,7 +25,7 @@ const { width } = Dimensions.get('window');
 
 const HomeScreen = ({ navigation }) => {
   const { theme } = useTheme();
-  const { t } = useTranslation();
+  const { t } = useLanguage();
   const { user } = useAuth();
   const { notifications } = useNotifications();
   const { isOnline, isOfflineMode } = useOffline();

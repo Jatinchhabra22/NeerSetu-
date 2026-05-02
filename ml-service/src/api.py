@@ -9,8 +9,8 @@ import os
 from datetime import datetime
 import logging
 
-from ml_pipeline import MLPipeline
-from predictor import OutbreakPredictor
+from .ml_pipeline import MLPipeline
+from .predictor import OutbreakPredictor
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

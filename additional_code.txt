@@ -1,0 +1,1107 @@
+================================================================================
+APPENDIX A: ADDITIONAL IMPLEMENTATION CODES (ML-FOCUSED)
+================================================================================
+
+A.1 ML MODEL TRAINER - CORE IMPLEMENTATION
+File: ml-service/src/model_trainer.py
+--------------------------------------------------------------------------------
+
+import os
+import sys
+import numpy as np
+import pandas as pd
+import pickle
+import json
+from datetime import datetime
+from pathlib import Path
+from typing import Dict, List, Tuple, Any, Optional
+from sklearn.model_selection import train_test_split, cross_val_score, StratifiedKFold
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.metrics import (
+    accuracy_score, precision_score, recall_score, f1_score,
+    roc_auc_score, confusion_matrix
+)
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+from xgboost import XGBClassifier
+from lightgbm import LGBMClassifier
+import warnings
+warnings.filterwarnings('ignore')
+
+sys.path.append(str(Path(__file__).parent.parent))
+from config import Config, SUPPORTED_MODELS
+from data_processor import DataProcessor
+from logger import get_logger
+
+logger = get_logger(__name__)
+
+
+class ModelTrainer:
+    def __init__(self, config: Config):
+        self.config = config
+        self.data_processor = DataProcessor(config)
+        self.models: Dict[str, Any] = {}
+        self.scalers: Dict[str, StandardScaler] = {}
+        self.model_metrics: Dict[str, Dict[str, float]] = {}
+        self.feature_importance: Dict[str, Dict[str, float]] = {}
+        self.best_model_name: Optional[str] = None
+        self.best_model: Optional[Any] = None
+        
+        self.model_dir = Path(config.MODEL_DIR)
+        self.model_dir.mkdir(parents=True, exist_ok=True)
+        
+        logger.info("ModelTrainer initialized")
+    
+    def prepare_data(self, df: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray, List[str]]:
+        logger.info("Preparing data for training")
+        
+        df_processed = self.data_processor.preprocess_data(df)
+        
+        X = df_processed.drop(self.config.TARGET_COLUMN, axis=1)
+        y = df_processed[self.config.TARGET_COLUMN]
+        
+        feature_names = X.columns.tolist()
+        
+        logger.info(f"Data prepared: {X.shape[0]} samples, {X.shape[1]} features")
+        
+        return X.values, y.values, feature_names
+    
+    def initialize_model(self, model_name: str) -> Any:
+        logger.info(f"Initializing model: {model_name}")
+        
+        if model_name not in SUPPORTED_MODELS:
+            raise ValueError(f"Model {model_name} not supported")
+        
+        model_config = SUPPORTED_MODELS[model_name]
+        model_class = model_config['class']
+        model_params = model_config['params']
+        
+        model = model_class(**model_params)
+        
+        logger.info(f"Model initialized with parameters: {model_params}")
+        
+        return model
+    
+    def train_model(self, model_name: str, X_train: np.ndarray, y_train: np.ndarray,
+                   feature_names: List[str]) -> Any:
+        logger.info(f"Training model: {model_name}")
+        
+        model = self.initialize_model(model_name)
+        
+        if model_name in ['logistic_regression', 'svm']:
+            scaler = StandardScaler()
+            X_train_processed = scaler.fit_transform(X_train)
+            self.scalers[model_name] = scaler
+        else:
+            X_train_processed = X_train
+        
+        model.fit(X_train_processed, y_train)
+        
+        self.models[model_name] = model
+        
+        if hasattr(model, 'feature_importances_'):
+            self.feature_importance[model_name] = dict(zip(feature_names, model.feature_importances_))
+        
+        logger.info(f"Model trained: {model_name}")
+        
+        return model
+    
+    def evaluate_model(self, model_name: str, model: Any, X_test: np.ndarray, 
+                      y_test: np.ndarray) -> Dict[str, float]:
+        logger.info(f"Evaluating model: {model_name}")
+        
+        if model_name in ['logistic_regression', 'svm']:
+            X_test_processed = self.scalers[model_name].transform(X_test)
+        else:
+            X_test_processed = X_test
+        
+        y_pred = model.predict(X_test_processed)
+        y_pred_proba = model.predict_proba(X_test_processed)[:, 1] if hasattr(model, 'predict_proba') else None
+        
+        metrics = {
+            'accuracy': accuracy_score(y_test, y_pred),
+            'precision': precision_score(y_test, y_pred, average='weighted', zero_division=0),
+            'recall': recall_score(y_test, y_pred, average='weighted', zero_division=0),
+            'f1_score': f1_score(y_test, y_pred, average='weighted', zero_division=0)
+        }
+        
+        if y_pred_proba is not None:
+            metrics['roc_auc'] = roc_auc_score(y_test, y_pred_proba)
+        
+        cm = confusion_matrix(y_test, y_pred)
+        metrics['true_negatives'] = int(cm[0, 0]) if cm.shape[0] > 1 else 0
+        metrics['false_positives'] = int(cm[0, 1]) if cm.shape[0] > 1 else 0
+        metrics['false_negatives'] = int(cm[1, 0]) if cm.shape[0] > 1 else 0
+        metrics['true_positives'] = int(cm[1, 1]) if cm.shape[0] > 1 else 0
+        
+        self.model_metrics[model_name] = metrics
+        
+        logger.info(f"Model evaluation complete: {model_name}")
+        logger.info(f"Metrics: {json.dumps(metrics, indent=2)}")
+        
+        return metrics
+    
+    def cross_validate_model(self, model_name: str, model: Any, X: np.ndarray, 
+                            y: np.ndarray, cv: int = 5) -> Dict[str, float]:
+        logger.info(f"Cross-validating model: {model_name}")
+        
+        if model_name in ['logistic_regression', 'svm']:
+            X_processed = self.scalers[model_name].transform(X) if model_name in self.scalers else X
+        else:
+            X_processed = X
+        
+        skf = StratifiedKFold(n_splits=cv, shuffle=True, random_state=self.config.RANDOM_STATE)
+        
+        cv_scores = {
+            'accuracy': cross_val_score(model, X_processed, y, cv=skf, scoring='accuracy'),
+            'precision': cross_val_score(model, X_processed, y, cv=skf, scoring='precision_weighted'),
+            'recall': cross_val_score(model, X_processed, y, cv=skf, scoring='recall_weighted'),
+            'f1': cross_val_score(model, X_processed, y, cv=skf, scoring='f1_weighted')
+        }
+        
+        cv_results = {
+            'cv_accuracy_mean': float(np.mean(cv_scores['accuracy'])),
+            'cv_accuracy_std': float(np.std(cv_scores['accuracy'])),
+            'cv_precision_mean': float(np.mean(cv_scores['precision'])),
+            'cv_precision_std': float(np.std(cv_scores['precision'])),
+            'cv_recall_mean': float(np.mean(cv_scores['recall'])),
+            'cv_recall_std': float(np.std(cv_scores['recall'])),
+            'cv_f1_mean': float(np.mean(cv_scores['f1'])),
+            'cv_f1_std': float(np.std(cv_scores['f1']))
+        }
+        
+        logger.info(f"Cross-validation complete: {model_name}")
+        
+        return cv_results
+    
+    def train_all_models(self, df: pd.DataFrame) -> Dict[str, Any]:
+        logger.info("Starting training for all models")
+        
+        X, y, feature_names = self.prepare_data(df)
+        
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=self.config.TEST_SIZE, 
+            random_state=self.config.RANDOM_STATE, stratify=y
+        )
+        
+        results = {
+            'models': {},
+            'best_model': None,
+            'training_timestamp': datetime.now().isoformat(),
+            'feature_names': feature_names
+        }
+        
+        best_f1 = -1
+        
+        for model_name in SUPPORTED_MODELS.keys():
+            try:
+                logger.info(f"{'='*60}")
+                logger.info(f"Processing model: {model_name}")
+                logger.info(f"{'='*60}")
+                
+                model = self.train_model(model_name, X_train, y_train, feature_names)
+                
+                metrics = self.evaluate_model(model_name, model, X_test, y_test)
+                
+                cv_results = self.cross_validate_model(model_name, model, X, y)
+                
+                all_metrics = {**metrics, **cv_results}
+                
+                results['models'][model_name] = {
+                    'metrics': all_metrics,
+                    'feature_importance': self.feature_importance.get(model_name, {})
+                }
+                
+                if all_metrics['f1_score'] > best_f1:
+                    best_f1 = all_metrics['f1_score']
+                    self.best_model_name = model_name
+                    self.best_model = model
+                    results['best_model'] = {
+                        'name': model_name,
+                        'metrics': all_metrics
+                    }
+                
+            except Exception as e:
+                logger.error(f"Error training model {model_name}: {str(e)}", exc_info=True)
+                continue
+        
+        logger.info(f"{'='*60}")
+        logger.info(f"All models trained. Best model: {self.best_model_name}")
+        logger.info(f"{'='*60}")
+        
+        return results
+    
+    def save_model(self, model_name: str, model: Any, metrics: Dict[str, float]):
+        logger.info(f"Saving model: {model_name}")
+        
+        model_path = self.model_dir / f"{model_name}.pkl"
+        scaler_path = self.model_dir / f"{model_name}_scaler.pkl"
+        metrics_path = self.model_dir / f"{model_name}_metrics.json"
+        
+        with open(model_path, 'wb') as f:
+            pickle.dump(model, f)
+        
+        if model_name in self.scalers:
+            with open(scaler_path, 'wb') as f:
+                pickle.dump(self.scalers[model_name], f)
+        
+        with open(metrics_path, 'w') as f:
+            json.dump(metrics, f, indent=2, default=str)
+        
+        logger.info(f"Model saved to {model_path}")
+    
+    def save_all_models(self):
+        logger.info("Saving all models")
+        
+        for model_name, model in self.models.items():
+            if model_name in self.model_metrics:
+                self.save_model(model_name, model, self.model_metrics[model_name])
+        
+        if self.best_model_name and self.best_model:
+            best_model_path = self.model_dir / "best_model.pkl"
+            with open(best_model_path, 'wb') as f:
+                pickle.dump(self.best_model, f)
+            
+            if self.best_model_name in self.scalers:
+                best_scaler_path = self.model_dir / "best_model_scaler.pkl"
+                with open(best_scaler_path, 'wb') as f:
+                    pickle.dump(self.scalers[self.best_model_name], f)
+            
+            logger.info(f"Best model saved: {self.best_model_name}")
+    
+    def full_training_pipeline(self, df: pd.DataFrame) -> Dict[str, Any]:
+        logger.info("Starting full training pipeline")
+        
+        results = self.train_all_models(df)
+        
+        self.save_all_models()
+        
+        logger.info("Full training pipeline completed")
+        
+        return results
+
+
+def main():
+    logger.info("="*80)
+    logger.info("NEERSETU ML MODEL TRAINING PIPELINE")
+    logger.info("="*80)
+    
+    config = Config()
+    trainer = ModelTrainer(config)
+    
+    data_path = Path(config.DATA_DIR) / "processed" / "combined_training_data.csv"
+    
+    if not data_path.exists():
+        logger.error(f"Training data not found at {data_path}")
+        return
+    
+    logger.info(f"Loading training data from {data_path}")
+    df = pd.read_csv(data_path)
+    
+    logger.info(f"Data loaded: {df.shape[0]} rows, {df.shape[1]} columns")
+    
+    results = trainer.full_training_pipeline(df)
+    
+    logger.info("="*80)
+    logger.info("TRAINING SUMMARY")
+    logger.info("="*80)
+    
+    if results['best_model']:
+        logger.info(f"Best Model: {results['best_model']['name']}")
+        logger.info(f"Accuracy: {results['best_model']['metrics']['accuracy']:.4f}")
+        logger.info(f"F1-Score: {results['best_model']['metrics']['f1_score']:.4f}")
+        if 'roc_auc' in results['best_model']['metrics']:
+            logger.info(f"ROC-AUC: {results['best_model']['metrics']['roc_auc']:.4f}")
+    
+    logger.info("="*80)
+    logger.info("Training pipeline completed successfully!")
+    logger.info("="*80)
+
+
+if __name__ == "__main__":
+    main()
+
+--------------------------------------------------------------------------------
+A.2 DATA PROCESSOR - CORE IMPLEMENTATION
+File: ml-service/src/data_processor.py
+--------------------------------------------------------------------------------
+
+import numpy as np
+import pandas as pd
+from pathlib import Path
+from typing import Dict, List, Any, Optional
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.impute import SimpleImputer
+from sklearn.feature_selection import SelectKBest, mutual_info_classif
+import warnings
+warnings.filterwarnings('ignore')
+
+from config import Config
+from logger import get_logger
+
+logger = get_logger(__name__)
+
+
+class DataProcessor:
+    def __init__(self, config: Config):
+        self.config = config
+        self.label_encoders: Dict[str, LabelEncoder] = {}
+        self.scalers: Dict[str, StandardScaler] = {}
+        self.imputers: Dict[str, Any] = {}
+        self.selected_features: Optional[List[str]] = None
+        self.feature_stats: Dict[str, Dict[str, float]] = {}
+        
+        self.processed_dir = Path(config.DATA_DIR) / "processed"
+        self.processed_dir.mkdir(parents=True, exist_ok=True)
+        
+        logger.info("DataProcessor initialized")
+    
+    def clean_data(self, df: pd.DataFrame) -> pd.DataFrame:
+        logger.info("Starting data cleaning")
+        
+        df_clean = df.copy()
+        
+        initial_rows = len(df_clean)
+        
+        df_clean = df_clean.drop_duplicates()
+        logger.info(f"Removed {initial_rows - len(df_clean)} duplicate rows")
+        
+        for col in df_clean.columns:
+            if df_clean[col].dtype == 'object':
+                df_clean[col] = df_clean[col].str.strip()
+        
+        df_clean = df_clean.replace(['', ' ', 'NA', 'N/A', 'null'], np.nan)
+        
+        logger.info(f"Data cleaning complete: {df_clean.shape[0]} rows, {df_clean.shape[1]} columns")
+        
+        return df_clean
+    
+    def handle_missing_values(self, df: pd.DataFrame) -> pd.DataFrame:
+        logger.info("Handling missing values")
+        
+        df_imputed = df.copy()
+        
+        missing_stats = df_imputed.isnull().sum()
+        missing_cols = missing_stats[missing_stats > 0].index.tolist()
+        
+        if not missing_cols:
+            logger.info("No missing values found")
+            return df_imputed
+        
+        for col in missing_cols:
+            missing_percent = (df_imputed[col].isnull().sum() / len(df_imputed)) * 100
+            
+            if missing_percent > 50:
+                logger.info(f"Dropping column {col} (missing: {missing_percent:.1f}%)")
+                df_imputed = df_imputed.drop(col, axis=1)
+                continue
+            
+            if df_imputed[col].dtype in ['int64', 'float64']:
+                imputer = SimpleImputer(strategy='median')
+                df_imputed[col] = imputer.fit_transform(df_imputed[[col]])
+                self.imputers[col] = imputer
+            else:
+                imputer = SimpleImputer(strategy='most_frequent')
+                df_imputed[col] = imputer.fit_transform(df_imputed[[col]]).ravel()
+                self.imputers[col] = imputer
+        
+        logger.info("Missing values handled")
+        
+        return df_imputed
+    
+    def encode_categorical_features(self, df: pd.DataFrame) -> pd.DataFrame:
+        logger.info("Encoding categorical features")
+        
+        df_encoded = df.copy()
+        
+        categorical_cols = df_encoded.select_dtypes(include=['object', 'category']).columns.tolist()
+        
+        if not categorical_cols:
+            logger.info("No categorical columns found")
+            return df_encoded
+        
+        for col in categorical_cols:
+            if col == self.config.TARGET_COLUMN:
+                continue
+            
+            le = LabelEncoder()
+            df_encoded[col] = le.fit_transform(df_encoded[col].astype(str))
+            self.label_encoders[col] = le
+        
+        logger.info("Categorical features encoded")
+        
+        return df_encoded
+    
+    def engineer_features(self, df: pd.DataFrame) -> pd.DataFrame:
+        logger.info("Starting feature engineering")
+        
+        df_engineered = df.copy()
+        
+        if 'timestamp' in df_engineered.columns:
+            df_engineered['timestamp'] = pd.to_datetime(df_engineered['timestamp'])
+            df_engineered['hour'] = df_engineered['timestamp'].dt.hour
+            df_engineered['day_of_week'] = df_engineered['timestamp'].dt.dayofweek
+            df_engineered['month'] = df_engineered['timestamp'].dt.month
+            df_engineered['is_weekend'] = (df_engineered['day_of_week'] >= 5).astype(int)
+        
+        if 'avgPH' in df_engineered.columns and 'avgTurbidity' in df_engineered.columns:
+            df_engineered['water_quality_index'] = (
+                (df_engineered['avgPH'].clip(6.5, 8.5) - 6.5) / 2 +
+                (1 - df_engineered['avgTurbidity'].clip(0, 100) / 100)
+            ) / 2 * 100
+        
+        if 'avgBacteriaEcoli' in df_engineered.columns and 'avgBacteriaColiform' in df_engineered.columns:
+            df_engineered['bacteria_load'] = (
+                df_engineered['avgBacteriaEcoli'] + 
+                df_engineered['avgBacteriaColiform']
+            )
+        
+        if 'totalDiarrheaCases' in df_engineered.columns:
+            df_engineered['log_diarrhea_cases'] = np.log1p(df_engineered['totalDiarrheaCases'])
+        
+        numerical_cols = df_engineered.select_dtypes(include=['int64', 'float64']).columns.tolist()
+        
+        for col in numerical_cols:
+            if col != self.config.TARGET_COLUMN and col in df_engineered.columns:
+                self.feature_stats[col] = {
+                    'mean': float(df_engineered[col].mean()),
+                    'std': float(df_engineered[col].std()),
+                    'min': float(df_engineered[col].min()),
+                    'max': float(df_engineered[col].max())
+                }
+        
+        logger.info(f"Feature engineering complete. New shape: {df_engineered.shape}")
+        
+        return df_engineered
+    
+    def select_features(self, df: pd.DataFrame, target_col: str, k: int = 20) -> pd.DataFrame:
+        logger.info(f"Selecting top {k} features")
+        
+        if target_col not in df.columns:
+            return df
+        
+        X = df.drop(target_col, axis=1)
+        y = df[target_col]
+        
+        feature_names = X.columns.tolist()
+        
+        if len(feature_names) <= k:
+            self.selected_features = feature_names
+            return df
+        
+        selector = SelectKBest(score_func=mutual_info_classif, k=k)
+        X_selected = selector.fit_transform(X, y)
+        
+        selected_mask = selector.get_support()
+        selected_features = [feature_names[i] for i in range(len(feature_names)) if selected_mask[i]]
+        
+        self.selected_features = selected_features
+        
+        feature_scores = dict(zip(feature_names, selector.scores_))
+        sorted_features = sorted(feature_scores.items(), key=lambda x: x[1], reverse=True)
+        
+        logger.info(f"Selected features: {selected_features}")
+        
+        df_selected = df[selected_features + [target_col]].copy()
+        
+        return df_selected
+    
+    def preprocess_data(self, df: pd.DataFrame, is_training: bool = True) -> pd.DataFrame:
+        logger.info("Starting full preprocessing pipeline")
+        
+        df_processed = self.clean_data(df)
+        
+        df_processed = self.handle_missing_values(df_processed)
+        
+        df_processed = self.encode_categorical_features(df_processed)
+        
+        df_processed = self.engineer_features(df_processed)
+        
+        if is_training and self.config.TARGET_COLUMN in df_processed.columns:
+            df_processed = self.select_features(
+                df_processed, 
+                self.config.TARGET_COLUMN,
+                k=min(self.config.MAX_FEATURES, len(df_processed.columns) - 1)
+            )
+        
+        logger.info("Full preprocessing pipeline complete")
+        
+        return df_processed
+
+
+def main():
+    logger.info("="*80)
+    logger.info("NEERSETU DATA PREPROCESSING PIPELINE")
+    logger.info("="*80)
+    
+    config = Config()
+    processor = DataProcessor(config)
+    
+    raw_data_dir = Path(config.DATA_DIR) / "raw"
+    csv_files = list(raw_data_dir.glob("*.csv"))
+    
+    if not csv_files:
+        logger.error("No CSV files found")
+        return
+    
+    datasets = []
+    for csv_file in csv_files:
+        try:
+            df = pd.read_csv(csv_file)
+            datasets.append(df)
+            logger.info(f"Loaded: {csv_file.name} ({df.shape})")
+        except Exception as e:
+            logger.error(f"Error loading {csv_file.name}: {str(e)}")
+    
+    if not datasets:
+        logger.error("No datasets could be loaded")
+        return
+    
+    combined_df = pd.concat(datasets, ignore_index=True)
+    processed_df = processor.preprocess_data(combined_df, is_training=True)
+    processor.save_processed_data(processed_df, "combined_training_data.csv")
+    
+    logger.info("="*80)
+    logger.info("Data preprocessing completed successfully!")
+    logger.info("="*80)
+
+
+if __name__ == "__main__":
+    main()
+
+--------------------------------------------------------------------------------
+A.3 ML PREDICTOR - CORE IMPLEMENTATION
+File: ml-service/src/predictor.py
+--------------------------------------------------------------------------------
+
+import numpy as np
+import pandas as pd
+import pickle
+import json
+from pathlib import Path
+from typing import Dict, List, Any, Optional
+from datetime import datetime
+import warnings
+warnings.filterwarnings('ignore')
+
+from config import Config, SUPPORTED_MODELS
+from data_processor import DataProcessor
+from logger import get_logger
+
+logger = get_logger(__name__)
+
+
+class Predictor:
+    def __init__(self, config: Config):
+        self.config = config
+        self.data_processor = DataProcessor(config)
+        self.models: Dict[str, Any] = {}
+        self.scalers: Dict[str, Any] = {}
+        self.model_metrics: Dict[str, Dict[str, float]] = {}
+        self.best_model_name: Optional[str] = None
+        self.best_model: Optional[Any] = None
+        self.best_scaler: Optional[Any] = None
+        self.feature_names: List[str] = []
+        self.is_loaded: bool = False
+        
+        self.model_dir = Path(config.MODEL_DIR)
+        
+        logger.info("Predictor initialized")
+    
+    def load_models(self):
+        logger.info("Loading trained models")
+        
+        if not self.model_dir.exists():
+            raise FileNotFoundError(f"Model directory not found: {self.model_dir}")
+        
+        best_model_path = self.model_dir / "best_model.pkl"
+        best_scaler_path = self.model_dir / "best_model_scaler.pkl"
+        best_metrics_path = self.model_dir / "best_model_metrics.json"
+        
+        if best_model_path.exists():
+            with open(best_model_path, 'rb') as f:
+                self.best_model = pickle.load(f)
+            
+            if best_scaler_path.exists():
+                with open(best_scaler_path, 'rb') as f:
+                    self.best_scaler = pickle.load(f)
+            
+            if best_metrics_path.exists():
+                with open(best_metrics_path, 'r') as f:
+                    best_info = json.load(f)
+                    self.best_model_name = best_info.get('model_name')
+                    self.model_metrics['best'] = best_info.get('metrics', {})
+            
+            logger.info(f"Best model loaded: {self.best_model_name}")
+        
+        for model_name in SUPPORTED_MODELS.keys():
+            model_path = self.model_dir / f"{model_name}.pkl"
+            scaler_path = self.model_dir / f"{model_name}_scaler.pkl"
+            metrics_path = self.model_dir / f"{model_name}_metrics.json"
+            
+            if model_path.exists():
+                with open(model_path, 'rb') as f:
+                    self.models[model_name] = pickle.load(f)
+                
+                if scaler_path.exists():
+                    with open(scaler_path, 'rb') as f:
+                        self.scalers[model_name] = pickle.load(f)
+                
+                if metrics_path.exists():
+                    with open(metrics_path, 'r') as f:
+                        self.model_metrics[model_name] = json.load(f)
+                
+                logger.info(f"Loaded model: {model_name}")
+        
+        self.is_loaded = True
+        logger.info(f"All models loaded. Total models: {len(self.models)}")
+    
+    def predict_single(self, input_data: Dict[str, Any], 
+                      model_name: Optional[str] = None) -> Dict[str, Any]:
+        if not self.is_loaded:
+            self.load_models()
+        
+        if model_name is None:
+            model = self.best_model
+            scaler = self.best_scaler
+            used_model_name = self.best_model_name or 'best_model'
+        else:
+            if model_name not in self.models:
+                raise ValueError(f"Model {model_name} not found")
+            model = self.models[model_name]
+            scaler = self.scalers.get(model_name)
+            used_model_name = model_name
+        
+        logger.info(f"Predicting with model: {used_model_name}")
+        
+        processed_data = self.data_processor.preprocess_single_sample(input_data)
+        
+        if scaler is not None and used_model_name in ['logistic_regression', 'svm']:
+            processed_data = scaler.transform(processed_data)
+        
+        prediction = model.predict(processed_data)[0]
+        prediction_proba = model.predict_proba(processed_data)[0] if hasattr(model, 'predict_proba') else None
+        
+        risk_index = self.calculate_risk_index(input_data, prediction_proba)
+        risk_level = self.get_risk_level(risk_index)
+        
+        result = {
+            'prediction': int(prediction),
+            'prediction_label': 'Outbreak' if prediction == 1 else 'No Outbreak',
+            'confidence': float(prediction_proba[1]) if prediction_proba is not None else None,
+            'confidence_scores': {
+                'no_outbreak': float(prediction_proba[0]) if prediction_proba is not None else None,
+                'outbreak': float(prediction_proba[1]) if prediction_proba is not None else None
+            },
+            'risk_index': risk_index,
+            'risk_level': risk_level,
+            'model_used': used_model_name,
+            'timestamp': datetime.now().isoformat()
+        }
+        
+        contributing_factors = self.identify_contributing_factors(input_data, risk_index)
+        result['contributing_factors'] = contributing_factors
+        
+        recommendations = self.generate_recommendations(risk_level, contributing_factors)
+        result['recommendations'] = recommendations
+        
+        logger.info(f"Prediction complete: {result['prediction_label']} (Risk Index: {risk_index})")
+        
+        return result
+    
+    def calculate_risk_index(self, input_data: Dict[str, Any], 
+                            prediction_proba: Optional[np.ndarray]) -> int:
+        risk_score = 0
+        
+        ph = input_data.get('avgPH', 7.0)
+        if ph < 6.0 or ph > 9.0:
+            risk_score += 80
+        elif ph < 6.5 or ph > 8.5:
+            risk_score += 40
+        
+        turbidity = input_data.get('avgTurbidity', 0)
+        if turbidity > 50:
+            risk_score += 100
+        elif turbidity > 25:
+            risk_score += 60
+        elif turbidity > 10:
+            risk_score += 30
+        elif turbidity > 5:
+            risk_score += 15
+        
+        ecoli = input_data.get('avgBacteriaEcoli', 0)
+        if ecoli > 1000:
+            risk_score += 120
+        elif ecoli > 500:
+            risk_score += 80
+        elif ecoli > 100:
+            risk_score += 50
+        elif ecoli > 50:
+            risk_score += 25
+        
+        coliform = input_data.get('avgBacteriaColiform', 0)
+        if coliform > 5000:
+            risk_score += 80
+        elif coliform > 1000:
+            risk_score += 50
+        elif coliform > 500:
+            risk_score += 25
+        
+        diarrhea = input_data.get('totalDiarrheaCases', 0)
+        if diarrhea > 20:
+            risk_score += 100
+        elif diarrhea > 10:
+            risk_score += 60
+        elif diarrhea > 5:
+            risk_score += 30
+        elif diarrhea > 0:
+            risk_score += 15
+        
+        rainfall = input_data.get('dailyRainfall', 0)
+        if rainfall > 100:
+            risk_score += 40
+        elif rainfall > 50:
+            risk_score += 25
+        elif rainfall > 20:
+            risk_score += 10
+        
+        if prediction_proba is not None:
+            risk_score += int(prediction_proba[1] * 100)
+        
+        risk_index = min(500, max(0, risk_score))
+        
+        return risk_index
+    
+    def get_risk_level(self, risk_index: int) -> str:
+        if risk_index <= 100:
+            return 'Low'
+        elif risk_index <= 200:
+            return 'Moderate'
+        elif risk_index <= 300:
+            return 'High'
+        elif risk_index <= 400:
+            return 'Very High'
+        else:
+            return 'Severe'
+    
+    def identify_contributing_factors(self, input_data: Dict[str, Any], 
+                                     risk_index: int) -> List[Dict[str, Any]]:
+        factors = []
+        
+        ph = input_data.get('avgPH', 7.0)
+        if ph < 6.0 or ph > 9.0:
+            factors.append({
+                'factor': 'pH Level',
+                'value': ph,
+                'severity': 'Critical',
+                'description': 'pH level outside safe range (6.5-8.5)',
+                'contribution': 'High'
+            })
+        
+        turbidity = input_data.get('avgTurbidity', 0)
+        if turbidity > 25:
+            factors.append({
+                'factor': 'Turbidity',
+                'value': turbidity,
+                'severity': 'Critical' if turbidity > 50 else 'High',
+                'description': 'High turbidity indicates contamination',
+                'contribution': 'High'
+            })
+        
+        ecoli = input_data.get('avgBacteriaEcoli', 0)
+        if ecoli > 100:
+            factors.append({
+                'factor': 'E. coli Bacteria',
+                'value': ecoli,
+                'severity': 'Critical' if ecoli > 500 else 'High',
+                'description': 'E. coli detected - indicates fecal contamination',
+                'contribution': 'Very High'
+            })
+        
+        diarrhea = input_data.get('totalDiarrheaCases', 0)
+        if diarrhea > 0:
+            factors.append({
+                'factor': 'Diarrhea Cases',
+                'value': diarrhea,
+                'severity': 'Critical' if diarrhea > 10 else 'High' if diarrhea > 5 else 'Warning',
+                'description': f'{diarrhea} reported cases of diarrhea',
+                'contribution': 'High'
+            })
+        
+        return factors
+    
+    def generate_recommendations(self, risk_level: str, 
+                                contributing_factors: List[Dict[str, Any]]) -> List[str]:
+        recommendations = []
+        
+        base_recommendations = {
+            'Low': [
+                'Continue regular water quality monitoring',
+                'Maintain hygiene practices'
+            ],
+            'Moderate': [
+                'Increase monitoring frequency',
+                'Consider boiling water before consumption'
+            ],
+            'High': [
+                'Immediately issue advisory to community',
+                'Do not consume water without proper treatment',
+                'Deploy rapid response team'
+            ],
+            'Very High': [
+                'EMERGENCY: Activate full response protocol',
+                'Distribute safe drinking water immediately',
+                'Set up temporary health camps'
+            ],
+            'Severe': [
+                'CRITICAL EMERGENCY: Declare public health emergency',
+                'Mobilize all available resources',
+                'Mass distribution of safe water'
+            ]
+        }
+        
+        recommendations.extend(base_recommendations.get(risk_level, []))
+        
+        for factor in contributing_factors:
+            factor_name = factor['factor']
+            
+            if 'E. coli' in factor_name:
+                recommendations.append('Chlorinate water supply immediately')
+            
+            if 'Diarrhea' in factor_name:
+                recommendations.append('Monitor hospitals for increased admissions')
+                recommendations.append('Distribute oral rehydration salts')
+        
+        recommendations = list(dict.fromkeys(recommendations))
+        
+        return recommendations
+
+
+def main():
+    logger.info("="*80)
+    logger.info("NEERSETU PREDICTOR TEST")
+    logger.info("="*80)
+    
+    config = Config()
+    predictor = Predictor(config)
+    
+    try:
+        predictor.load_models()
+        
+        sample_input = {
+            'avgPH': 8.2,
+            'avgTurbidity': 35.5,
+            'avgBacteriaEcoli': 450,
+            'avgBacteriaColiform': 1200,
+            'totalDiarrheaCases': 8,
+            'dailyRainfall': 65.0,
+            'temperature': 28.5,
+            'humidity': 85.0,
+            'season': 'Monsoon',
+            'month': 7
+        }
+        
+        result = predictor.predict_single(sample_input)
+        
+        logger.info("="*80)
+        logger.info("PREDICTION RESULT")
+        logger.info("="*80)
+        logger.info(f"Prediction: {result['prediction_label']}")
+        logger.info(f"Risk Index: {result['risk_index']}")
+        logger.info(f"Risk Level: {result['risk_level']}")
+        logger.info(f"Model Used: {result['model_used']}")
+        logger.info("="*80)
+        
+        if 'contributing_factors' in result:
+            logger.info("Contributing Factors:")
+            for factor in result['contributing_factors'][:5]:
+                logger.info(f"  - {factor['factor']}: {factor['value']}")
+        
+        logger.info("="*80)
+        logger.info("Predictor test completed successfully!")
+        logger.info("="*80)
+        
+    except Exception as e:
+        logger.error(f"Error in predictor test: {str(e)}", exc_info=True)
+
+
+if __name__ == "__main__":
+    main()
+
+--------------------------------------------------------------------------------
+A.4 ML CONFIGURATION - SUPPORTED MODELS
+File: ml-service/src/config.py
+--------------------------------------------------------------------------------
+
+import os
+from pathlib import Path
+from typing import Dict, Any, List
+from xgboost import XGBClassifier
+from lightgbm import LGBMClassifier
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+
+
+class Config:
+    BASE_DIR = Path(__file__).parent.parent
+    
+    DATA_DIR = os.getenv('DATA_DIR', str(BASE_DIR / 'data'))
+    MODEL_DIR = os.getenv('MODEL_DIR', str(BASE_DIR / 'models'))
+    LOG_DIR = os.getenv('LOG_DIR', str(BASE_DIR / 'logs'))
+    
+    API_HOST = os.getenv('API_HOST', '0.0.0.0')
+    API_PORT = int(os.getenv('API_PORT', 8001))
+    DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
+    
+    RANDOM_STATE = int(os.getenv('RANDOM_STATE', 42))
+    TEST_SIZE = float(os.getenv('TEST_SIZE', 0.2))
+    CV_FOLDS = int(os.getenv('CV_FOLDS', 5))
+    
+    TARGET_COLUMN = os.getenv('TARGET_COLUMN', 'outbreak_occurred')
+    
+    MAX_FEATURES = int(os.getenv('MAX_FEATURES', 30))
+    
+    ENABLE_SHAP = os.getenv('ENABLE_SHAP', 'True').lower() == 'true'
+    
+    PREDICTION_THRESHOLD = float(os.getenv('PREDICTION_THRESHOLD', 0.5))
+    
+    @classmethod
+    def ensure_directories(cls):
+        for dir_path in [cls.DATA_DIR, cls.MODEL_DIR, cls.LOG_DIR]:
+            Path(dir_path).mkdir(parents=True, exist_ok=True)
+
+
+SUPPORTED_MODELS: Dict[str, Dict[str, Any]] = {
+    'xgboost': {
+        'class': XGBClassifier,
+        'params': {
+            'n_estimators': 200,
+            'max_depth': 6,
+            'learning_rate': 0.1,
+            'subsample': 0.8,
+            'colsample_bytree': 0.8,
+            'random_state': 42,
+            'use_label_encoder': False,
+            'eval_metric': 'logloss',
+            'n_jobs': -1
+        }
+    },
+    'random_forest': {
+        'class': RandomForestClassifier,
+        'params': {
+            'n_estimators': 200,
+            'max_depth': 10,
+            'min_samples_split': 5,
+            'min_samples_leaf': 2,
+            'random_state': 42,
+            'n_jobs': -1
+        }
+    },
+    'lightgbm': {
+        'class': LGBMClassifier,
+        'params': {
+            'n_estimators': 200,
+            'max_depth': 6,
+            'learning_rate': 0.1,
+            'subsample': 0.8,
+            'colsample_bytree': 0.8,
+            'random_state': 42,
+            'n_jobs': -1,
+            'verbose': -1
+        }
+    },
+    'gradient_boosting': {
+        'class': GradientBoostingClassifier,
+        'params': {
+            'n_estimators': 200,
+            'max_depth': 6,
+            'learning_rate': 0.1,
+            'subsample': 0.8,
+            'random_state': 42
+        }
+    },
+    'logistic_regression': {
+        'class': LogisticRegression,
+        'params': {
+            'C': 1.0,
+            'max_iter': 1000,
+            'random_state': 42,
+            'n_jobs': -1
+        }
+    },
+    'svm': {
+        'class': SVC,
+        'params': {
+            'C': 1.0,
+            'kernel': 'rbf',
+            'probability': True,
+            'random_state': 42
+        }
+    }
+}
+
+RISK_LEVELS: Dict[str, Dict[str, Any]] = {
+    'Low': {
+        'min': 0,
+        'max': 100,
+        'color': '#10B981',
+        'description': 'Normal conditions - Continue monitoring'
+    },
+    'Moderate': {
+        'min': 101,
+        'max': 200,
+        'color': '#F59E0B',
+        'description': 'Elevated risk - Monitor closely'
+    },
+    'High': {
+        'min': 201,
+        'max': 300,
+        'color': '#F97316',
+        'description': 'High risk - Take precautions'
+    },
+    'Very High': {
+        'min': 301,
+        'max': 400,
+        'color': '#EF4444',
+        'description': 'Very high risk - Immediate action needed'
+    },
+    'Severe': {
+        'min': 401,
+        'max': 500,
+        'color': '#991B1B',
+        'description': 'Severe risk - Emergency response required'
+    }
+}
+
+WATER_QUALITY_STANDARDS: Dict[str, Dict[str, float]] = {
+    'pH': {'min': 6.5, 'max': 8.5},
+    'turbidity': {'max': 5.0},
+    'bacteriaEcoli': {'max': 100.0},
+    'bacteriaColiform': {'max': 1000.0},
+    'dissolvedOxygen': {'min': 5.0},
+    'nitrates': {'max': 45.0},
+    'fluoride': {'max': 1.5},
+    'arsenic': {'max': 0.01}
+}
+
+SEASONS: List[str] = ['Winter', 'Summer', 'Monsoon', 'Post-Monsoon']
+
+ALERT_TYPES: List[str] = [
+    'outbreak_prediction',
+    'water_contamination',
+    'environmental_risk',
+    'health_surge',
+    'system_alert'
+]
+
+SEVERITY_LEVELS: List[str] = ['Low', 'Medium', 'High', 'Critical']
+
+USER_ROLES: List[str] = ['villager', 'asha_worker', 'official', 'admin']
+
+CONTAMINATION_LEVELS: List[str] = ['Safe', 'Low', 'Medium', 'High', 'Critical']
+
+================================================================================
+END OF ML-FOCUSED ADDITIONAL CODE (1000+ lines)
+================================================================================

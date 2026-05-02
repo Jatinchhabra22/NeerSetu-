@@ -56,7 +56,7 @@ const Login = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
           <div className="flex justify-center">
@@ -64,15 +64,15 @@ const Login = ({ onLogin }) => {
               <span className="text-white font-bold text-2xl">N</span>
             </div>
           </div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-slate-50">
             NeerSetu Dashboard
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <p className="mt-2 text-center text-sm text-slate-300">
             Smart Community Health Monitoring System
           </p>
         </div>
         
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form className="mt-8 space-y-6 bg-[#111827] border border-slate-700 rounded-xl p-6 shadow-xl" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
               <label htmlFor="email" className="sr-only">
@@ -84,7 +84,7 @@ const Login = ({ onLogin }) => {
                 type="email"
                 autoComplete="email"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-slate-600 placeholder-slate-400 bg-slate-900 text-slate-100 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="Email address"
                 value={formData.email}
                 onChange={handleChange}
@@ -100,7 +100,7 @@ const Login = ({ onLogin }) => {
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="current-password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 pr-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 pr-10 border border-slate-600 placeholder-slate-400 bg-slate-900 text-slate-100 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="Password"
                 value={formData.password}
                 onChange={handleChange}
@@ -120,8 +120,8 @@ const Login = ({ onLogin }) => {
           </div>
 
           {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <div className="text-sm text-red-700">{error}</div>
+            <div className="rounded-md bg-red-500/10 border border-red-500/30 p-4">
+              <div className="text-sm text-red-300">{error}</div>
             </div>
           )}
 
@@ -136,10 +136,10 @@ const Login = ({ onLogin }) => {
           </div>
 
           <div className="text-center">
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-slate-300">
               Demo Accounts:
             </div>
-            <div className="text-xs text-gray-500 mt-1">
+            <div className="text-xs text-slate-400 mt-1">
               Admin: admin@neersetu.com / admin123<br />
               Official: official@neersetu.com / official123
             </div>

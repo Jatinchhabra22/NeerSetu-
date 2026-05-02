@@ -1,0 +1,122 @@
+{
+  "common": {
+    "welcome": "নীরসেতুতে আপনাকে স্বাগতম",
+    "loading": "লোড হচ্ছে...",
+    "error": "ত্রুটি",
+    "success": "সফল",
+    "cancel": "বাতিল",
+    "save": "সংরক্ষণ",
+    "edit": "সম্পাদনা",
+    "delete": "মুছে ফেলুন",
+    "submit": "জমা দিন",
+    "back": "পিছে",
+    "next": "পরবর্তী",
+    "done": "সম্পন্ন",
+    "yes": "হ্যাঁ",
+    "no": "না",
+    "ok": "ঠিক আছে"
+  },
+  "auth": {
+    "login": "লগ ইন",
+    "register": "নিবন্ধন",
+    "logout": "লগ আউট",
+    "email": "ইমেইল",
+    "password": "পাসওয়ার্ড",
+    "confirmPassword": "পাসওয়ার্ড নিশ্চিত করুন",
+    "forgotPassword": "পাসওয়ার্ড ভুলে গেছেন?",
+    "loginSuccess": "লগ ইন সফল",
+    "loginError": "লগ ইন ব্যর্থ",
+    "registerSuccess": "নিবন্ধন সফল",
+    "registerError": "নিবন্ধন ব্যর্থ"
+  },
+  "navigation": {
+    "home": "হোম",
+    "dashboard": "ড্যাশবোর্ড",
+    "reports": "রিপোর্ট",
+    "alerts": "সতর্কতা",
+    "profile": "প্রোফাইল",
+    "settings": "সেটিংস",
+    "about": "সম্পর্কে"
+  },
+  "waterQuality": {
+    "title": "জলের গুণমান",
+    "currentStatus": "বর্তমান অবস্থা",
+    "phLevel": "pH স্তর",
+    "turbidity": "ঘোলাটে",
+    "chlorine": "ক্লোরিন",
+    "bacteria": "ব্যাকটেরিয়া",
+    "safe": "নিরাপদ",
+    "unsafe": "অনিরাপদ",
+    "moderate": "মধ্যম",
+    "lastUpdated": "সর্বশেষ আপডেট",
+    "village": "গ্রাম",
+    "location": "অবস্থান"
+  },
+  "reports": {
+    "title": "জলের গুণমান রিপোর্ট",
+    "generateReport": "রিপোর্ট তৈরি করুন",
+    "downloadReport": "রিপোর্ট ডাউনলোড করুন",
+    "shareReport": "রিপোর্ট শেয়ার করুন",
+    "reportDate": "রিপোর্ট তারিখ",
+    "reportPeriod": "রিপোর্ট সময়কাল",
+    "villageReport": "গ্রাম রিপোর্ট",
+    "districtReport": "জেলা রিপোর্ট"
+  },
+  "alerts": {
+    "title": "সতর্কতা ও বিজ্ঞপ্তি",
+    "newAlert": "নতুন সতর্কতা",
+    "alertType": "সতর্কতার ধরন",
+    "alertLevel": "সতর্কতার স্তর",
+    "high": "উচ্চ",
+    "medium": "মধ্যম",
+    "low": "নিম্ন",
+    "critical": "গুরুতর",
+    "waterContamination": "জল দূষণ",
+    "maintenance": "রক্ষণাবেক্ষণ",
+    "systemDown": "সিস্টেম ডাউন"
+  },
+  "profile": {
+    "title": "প্রোফাইল",
+    "personalInfo": "ব্যক্তিগত তথ্য",
+    "name": "নাম",
+    "phone": "ফোন",
+    "address": "ঠিকানা",
+    "village": "গ্রাম",
+    "district": "জেলা",
+    "state": "রাজ্য",
+    "updateProfile": "প্রোফাইল আপডেট করুন",
+    "changePassword": "পাসওয়ার্ড পরিবর্তন করুন"
+  },
+  "settings": {
+    "title": "সেটিংস",
+    "language": "ভাষা",
+    "notifications": "বিজ্ঞপ্তি",
+    "theme": "থিম",
+    "privacy": "গোপনীয়তা",
+    "about": "অ্যাপ সম্পর্কে",
+    "version": "সংস্করণ",
+    "contact": "সহায়তার জন্য যোগাযোগ করুন"
+  },
+  "dashboard": {
+    "title": "ড্যাশবোর্ড",
+    "overview": "সামগ্রিক দৃশ্য",
+    "waterQualityStatus": "জলের গুণমান অবস্থা",
+    "recentReports": "সাম্প্রতিক রিপোর্ট",
+    "alerts": "সতর্কতা",
+    "villageStats": "গ্রামের পরিসংখ্যা",
+    "totalVillages": "মোট গ্রাম",
+    "safeVillages": "নিরাপদ গ্রাম",
+    "unsafeVillages": "অনিরাপদ গ্রাম",
+    "pendingReports": "বিচারাধীন রিপোর্ট"
+  },
+  "errors": {
+    "networkError": "নেটওয়ার্ক ত্রুটি",
+    "serverError": "সার্ভার ত্রুটি",
+    "notFound": "পাওয়া যায়নি",
+    "unauthorized": "অননুমোদিত",
+    "forbidden": "নিষিদ্ধ",
+    "tryAgain": "আবার চেষ্টা করুন",
+    "checkConnection": "আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন"
+  }
+}
+

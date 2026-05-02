@@ -215,6 +215,88 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Dark premium design system */
+.dark-dashboard {
+  background: #0f172a;
+  color: #f9fafb;
+  min-height: 100vh;
+}
+
+.dark-dashboard .bg-white {
+  background: #111827 !important;
+  border-color: rgba(148, 163, 184, 0.22) !important;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 14px 32px rgba(2, 6, 23, 0.45) !important;
+}
+
+.dark-dashboard .text-gray-900 { color: #f9fafb !important; }
+.dark-dashboard .text-gray-700,
+.dark-dashboard .text-gray-600,
+.dark-dashboard .text-gray-500,
+.dark-dashboard .text-gray-400 { color: #9ca3af !important; }
+
+.dark-dashboard .text-blue-300 { color: #93c5fd !important; }
+
+.dark-dashboard .border-gray-200,
+.dark-dashboard .border-gray-300 { border-color: rgba(148, 163, 184, 0.2) !important; }
+
+.dark-dashboard input,
+.dark-dashboard select,
+.dark-dashboard textarea {
+  background: rgba(30, 41, 59, 0.8) !important;
+  color: #e2e8f0 !important;
+  border-color: rgba(148, 163, 184, 0.3) !important;
+}
+
+.dark-dashboard .hover\:bg-gray-50:hover {
+  background: rgba(30, 41, 59, 0.7) !important;
+}
+
+.dark-dashboard .bg-gray-50,
+.dark-dashboard .bg-gray-100 {
+  background: #1f2937 !important;
+}
+
+.dark-dashboard .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(148, 163, 184, 0.18) !important;
+}
+
+.dark-dashboard .shadow-sm,
+.dark-dashboard .shadow-md,
+.dark-dashboard .shadow-lg {
+  box-shadow: 0 14px 32px rgba(2, 6, 23, 0.35) !important;
+}
+
+.dark-dashboard .status-sent,
+.dark-dashboard .status-delivered,
+.dark-dashboard .status-acknowledged,
+.dark-dashboard .status-escalated,
+.dark-dashboard .status-resolved,
+.dark-dashboard .priority-critical,
+.dark-dashboard .priority-high,
+.dark-dashboard .priority-medium,
+.dark-dashboard .priority-low {
+  border: 1px solid rgba(148, 163, 184, 0.28);
+}
+
+.dark-dashboard .leaflet-popup-content-wrapper,
+.dark-dashboard .leaflet-popup-tip {
+  background: #111827;
+  color: #f9fafb;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+}
+
+.dark-dashboard .leaflet-control-zoom a {
+  background: #1f2937;
+  color: #f9fafb;
+  border-bottom-color: rgba(148, 163, 184, 0.22);
+}
+
+.dark-dashboard .leaflet-control-attribution {
+  background: rgba(15, 23, 42, 0.8);
+  color: #cbd5e1;
+}
+
 /* Mobile-first responsive design */
 @media (max-width: 640px) {
   .mobile-padding {

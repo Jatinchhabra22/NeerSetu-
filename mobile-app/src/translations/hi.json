@@ -1,0 +1,122 @@
+{
+  "common": {
+    "welcome": "नीरसेतु में आपका स्वागत है",
+    "loading": "लोड हो रहा है...",
+    "error": "त्रुटि",
+    "success": "सफलता",
+    "cancel": "रद्द करें",
+    "save": "सहेजें",
+    "edit": "संपादित करें",
+    "delete": "हटाएं",
+    "submit": "जमा करें",
+    "back": "वापस",
+    "next": "अगला",
+    "done": "हो गया",
+    "yes": "हां",
+    "no": "नहीं",
+    "ok": "ठीक है"
+  },
+  "auth": {
+    "login": "लॉगिन",
+    "register": "रजिस्टर",
+    "logout": "लॉगआउट",
+    "email": "ईमेल",
+    "password": "पासवर्ड",
+    "confirmPassword": "पासवर्ड की पुष्टि करें",
+    "forgotPassword": "पासवर्ड भूल गए?",
+    "loginSuccess": "लॉगिन सफल",
+    "loginError": "लॉगिन असफल",
+    "registerSuccess": "रजिस्ट्रेशन सफल",
+    "registerError": "रजिस्ट्रेशन असफल"
+  },
+  "navigation": {
+    "home": "होम",
+    "dashboard": "डैशबोर्ड",
+    "reports": "रिपोर्ट्स",
+    "alerts": "अलर्ट्स",
+    "profile": "प्रोफाइल",
+    "settings": "सेटिंग्स",
+    "about": "के बारे में"
+  },
+  "waterQuality": {
+    "title": "जल गुणवत्ता",
+    "currentStatus": "वर्तमान स्थिति",
+    "phLevel": "pH स्तर",
+    "turbidity": "टर्बिडिटी",
+    "chlorine": "क्लोरीन",
+    "bacteria": "बैक्टीरिया",
+    "safe": "सुरक्षित",
+    "unsafe": "असुरक्षित",
+    "moderate": "मध्यम",
+    "lastUpdated": "अंतिम अपडेट",
+    "village": "गांव",
+    "location": "स्थान"
+  },
+  "reports": {
+    "title": "जल गुणवत्ता रिपोर्ट्स",
+    "generateReport": "रिपोर्ट जेनरेट करें",
+    "downloadReport": "रिपोर्ट डाउनलोड करें",
+    "shareReport": "रिपोर्ट शेयर करें",
+    "reportDate": "रिपोर्ट तिथि",
+    "reportPeriod": "रिपोर्ट अवधि",
+    "villageReport": "गांव रिपोर्ट",
+    "districtReport": "जिला रिपोर्ट"
+  },
+  "alerts": {
+    "title": "अलर्ट्स और नोटिफिकेशन्स",
+    "newAlert": "नया अलर्ट",
+    "alertType": "अलर्ट प्रकार",
+    "alertLevel": "अलर्ट स्तर",
+    "high": "उच्च",
+    "medium": "मध्यम",
+    "low": "निम्न",
+    "critical": "गंभीर",
+    "waterContamination": "जल प्रदूषण",
+    "maintenance": "रखरखाव",
+    "systemDown": "सिस्टम डाउन"
+  },
+  "profile": {
+    "title": "प्रोफाइल",
+    "personalInfo": "व्यक्तिगत जानकारी",
+    "name": "नाम",
+    "phone": "फोन",
+    "address": "पता",
+    "village": "गांव",
+    "district": "जिला",
+    "state": "राज्य",
+    "updateProfile": "प्रोफाइल अपडेट करें",
+    "changePassword": "पासवर्ड बदलें"
+  },
+  "settings": {
+    "title": "सेटिंग्स",
+    "language": "भाषा",
+    "notifications": "नोटिफिकेशन्स",
+    "theme": "थीम",
+    "privacy": "प्राइवेसी",
+    "about": "ऐप के बारे में",
+    "version": "वर्जन",
+    "contact": "सपोर्ट से संपर्क करें"
+  },
+  "dashboard": {
+    "title": "डैशबोर्ड",
+    "overview": "अवलोकन",
+    "waterQualityStatus": "जल गुणवत्ता स्थिति",
+    "recentReports": "हाल की रिपोर्ट्स",
+    "alerts": "अलर्ट्स",
+    "villageStats": "गांव आंकड़े",
+    "totalVillages": "कुल गांव",
+    "safeVillages": "सुरक्षित गांव",
+    "unsafeVillages": "असुरक्षित गांव",
+    "pendingReports": "लंबित रिपोर्ट्स"
+  },
+  "errors": {
+    "networkError": "नेटवर्क त्रुटि",
+    "serverError": "सर्वर त्रुटि",
+    "notFound": "नहीं मिला",
+    "unauthorized": "अनधिकृत",
+    "forbidden": "निषिद्ध",
+    "tryAgain": "फिर से कोशिश करें",
+    "checkConnection": "अपना इंटरनेट कनेक्शन जांचें"
+  }
+}
+
